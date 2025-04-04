@@ -8,6 +8,7 @@ from io import BytesIO
 
 ##This class is a URL parser that returns an object URL
 class URL:
+    MAX_REDIRECTS = 5
     _shared_sockets = {}
 
     def __init__ (self, url):   
@@ -47,7 +48,7 @@ class URL:
             self.host, port = self.host.split(':', 1)
             self.port = int(port)
 
-    def request(self):
+    def request(self, redirects_left = MAX_REDIRECTS):
         if self.scheme == "file":
             try:
                 with open(self.path, encoding="utf-8") as f:
@@ -101,19 +102,38 @@ class URL:
             for header, value in response.getheaders():
                 response_headers[header.casefold()] = value.strip()
 
-            content_length = response_headers.get("content-length")
-            if content_length:
-                content_length = int(content_length)
-                content = response.read(content_length).decode("utf-8")
-            else:
-                content = response.read().decode("utf-8")
+            if 300 <= status < 400:
+                if not redirects_left:
+                    raise Exception("Too many redirects")
+                location = response_headers.get("location")
+                if not location:
+                    raise Exception(f"Redirect without location header: {status} {reason}")
+                
+                redirect_url = location
+                if not redirect_url.startswith("http"):
+                    #Handle relative URL
+                    redirect_url = f"{self.scheme}://{self.host}"
+                    if not redirect_url.endswith("/") and not location.startswith("/"):
+                        redirect_url += "/"
+                    redirect_url += location
+                
+                print("Redirecting to:", redirect_url)
+                return URL(redirect_url).request(redirects_left=redirects_left-1)
 
-            if response.getheader("Connection") != "close":
-                return content
             else:
-                del URL._shared_sockets[key]
-                s.close()
-                return content            
+                content_length = response_headers.get("content-length")
+                if content_length:
+                    content_length = int(content_length)
+                    content = response.read(content_length).decode("utf-8")
+                else:
+                    content = response.read().decode("utf-8")
+
+                if response.getheader("Connection") != "close":
+                    return content
+                else:
+                    del URL._shared_sockets[key]
+                    s.close()
+                    return content            
     
     def show(body):
         in_tag = False
