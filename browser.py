@@ -92,13 +92,61 @@ class URL:
     
     def show(body):
         in_tag = False
+        entity_buffer = ""
         for c in body:
-            if c =="<":
+            if in_tag:
+                if c ==">":
+                    in_tag = False
+                continue
+            elif c == "<":
                 in_tag = True
-            elif c == ">":
-                in_tag = False
-            elif not in_tag:
+            elif c == "&":
+                entity_buffer = "&"
+            elif entity_buffer == "&":
+                if c == "l":
+                    entity_buffer += c
+                elif c == "g":
+                    entity_buffer += c
+                else:
+                    print(entity_buffer, end="") #Print if isn't part of an entity
+                    print(c, end="")
+                    entity_buffer
+            elif entity_buffer == "&l":
+                if c == "t":
+                    entity_buffer += c
+                else:
+                    print(entity_buffer, end="") #Print if isn't part of an entity
+                    print(c, end="")
+                    entity_buffer = ""
+            elif entity_buffer == "&lt":
+                if c == ";":
+                    print("<", end="")
+                    entity_buffer = ""
+                else:
+                    print(entity_buffer, end="") #Print if isn't part of an entity
+                    print(c, end="")
+                    entity_buffer = ""
+            elif entity_buffer == "&g":
+                if c == "t":
+                    entity_buffer += c
+                else:
+                    print(entity_buffer, end="") #Print if isn't part of an entity
+                    print(c, end="")
+                    entity_buffer = ""
+            elif entity_buffer == "&gt":
+                if c == ";":
+                    print(">", end="")
+                    entity_buffer = ""
+                else:
+                    print(entity_buffer, end="") #Print if isn't part of an entity
+                    print(c, end="")   
+                    entity_buffer = ""
+            else:
                 print(c, end="")
+        
+        if entity_buffer:
+            print(entity_buffer, end="")
+            
 
     def load(self):
         body = self.request()
