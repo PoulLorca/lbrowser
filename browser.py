@@ -8,6 +8,13 @@ import base64
 class URL:
     def __init__ (self, url):   
         self.raw_url = url
+
+        if url.startswith("view-source:"):
+            self.scheme = "view-source"
+            self.view_source_url = url[len("view-source:"):]
+            self.parsed_url = URL(self.view_source_url)
+            return
+
         if url.startswith("data:"):
             self.scheme = "data"
             _, self.data_content = url.split(":", 1)
@@ -51,6 +58,8 @@ class URL:
                 return base64.b64decode(data).decode("utf-8")
             else:
                 return data
+        elif self.scheme == "view-source":
+            return self.parsed_url.request()
         else:
             s = socket.socket(
                 family = socket.AF_INET,
@@ -149,8 +158,12 @@ class URL:
             
 
     def load(self):
-        body = self.request()
-        URL.show(body)
+        if self.scheme == "view-source":
+            body = self.request()
+            print(body)
+        else:
+            body = self.request()
+            URL.show(body)
 
 if __name__ == "__main__":
     import sys

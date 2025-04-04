@@ -39,6 +39,18 @@ class TestURL(unittest.TestCase):
         result = captured_output.getvalue().strip()
         expected = "This text contains a <strong>text</strong> and a > char."
         self.assertEqual(result, expected)
+
+    def test_data_url_view_source(self):
+        # Test the view-source URL
+        dataurl = "view-source:data:text/html,<h1>Hello, World!</h1>"
+        url = URL(dataurl)
+        captured_output = io.StringIO()
+        sys.stdout = captured_output
+        url.load()
+        sys.stdout = sys.__stdout__        
+        result = captured_output.getvalue().strip()
+        expected = "<h1>Hello, World!</h1>"
+        self.assertEqual(result, expected)
     
 
 if __name__ == "__main__":
