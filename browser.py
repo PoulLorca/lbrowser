@@ -3,9 +3,13 @@
 import socket
 import ssl
 import base64
+from http.client import HTTPResponse
+from io import BytesIO
 
 ##This class is a URL parser that returns an object URL
 class URL:
+    _shared_sockets = {}
+
     def __init__ (self, url):   
         self.raw_url = url
 
@@ -61,43 +65,55 @@ class URL:
         elif self.scheme == "view-source":
             return self.parsed_url.request()
         else:
-            s = socket.socket(
-                family = socket.AF_INET,
-                type = socket.SOCK_STREAM,
-                proto = socket.IPPROTO_TCP
-            )
-            s.connect((self.host, self.port))
-            if self.scheme == "https":
-                ctx = ssl.create_default_context()
-                s = ctx.wrap_socket(s, server_hostname=self.host)
+            key = (self.host, self.port)
+            if key in URL._shared_sockets:
+                s = URL._shared_sockets[key]
+            else:
+                s = socket.socket(
+                    family = socket.AF_INET,
+                    type = socket.SOCK_STREAM,
+                    proto = socket.IPPROTO_TCP
+                )
+                s.connect(key)
+            
+                if self.scheme == "https":
+                    ctx = ssl.create_default_context()
+                    s = ctx.wrap_socket(s, server_hostname=self.host)
+                URL._shared_sockets[key] = s
 
             request = f"GET {self.path} HTTP/1.1\r\n"
             request += f"Host: {self.host}\r\n"
             request += "User-Agent: PythonBrowser/0.1\r\n"
-            request += "Connection: close\r\n" # Only need in HTTP/1.1 
+            request += "Connection: keep-alive\r\n" # Only need in HTTP/1.1 
             request += "\r\n"
             s.send(request.encode("utf-8"))
 
-            response = s.makefile("r", encoding="utf-8", newline="\r\n")
+            raw_response = s.makefile("rb")
+            response = HTTPResponse(raw_response)
+            response.begin()
 
-            statusline = response.readline()
-            version, status, explanation = statusline.split(" ", 2)
+            status = response.status
+            reason = response.reason
+            version = response.version     
 
-            response_headers = {}
-            while True:
-                line = response.readline()
-                if line == "\r\n": 
-                    break
-                header, value = line.split(":", 1)
+            response_headers = {}       
+            
+            for header, value in response.getheaders():
                 response_headers[header.casefold()] = value.strip()
-                #Avoided to try to load chuncked headers
-                #assert "transfer-encoding" not in response_headers
-                #assert "content-enconding" not in response_headers
 
-            content = response.read()
-            s.close()
+            content_length = response_headers.get("content-length")
+            if content_length:
+                content_length = int(content_length)
+                content = response.read(content_length).decode("utf-8")
+            else:
+                content = response.read().decode("utf-8")
 
-            return content
+            if response.getheader("Connection") != "close":
+                return content
+            else:
+                del URL._shared_sockets[key]
+                s.close()
+                return content            
     
     def show(body):
         in_tag = False
