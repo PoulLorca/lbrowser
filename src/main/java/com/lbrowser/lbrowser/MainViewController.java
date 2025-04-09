@@ -1,10 +1,12 @@
 package com.lbrowser.lbrowser;
 
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
 import javafx.scene.web.WebEngine;
+import javafx.scene.web.WebHistory;
 import javafx.scene.web.WebView;
 
 import java.net.URL;
@@ -44,7 +46,7 @@ public class MainViewController implements Initializable {
         });
 
         // Load a default page
-        webEngine.load("https://www.google.com");
+        webEngine.load("https://www.startpage.com");
     }
 
     public void goBack(){
@@ -64,6 +66,8 @@ public class MainViewController implements Initializable {
     public void zoomOut(){web_view.setZoom(web_view.getZoom() - 0.1);}
     public void zoomReset(){web_view.setZoom(1.0);}
     public void showHistory(){
-        System.out.println(webEngine.getHistory());
+        WebHistory history = webEngine.getHistory();
+        ObservableList<WebHistory.Entry> entries = history.getEntries();
+        System.out.println(entries);
     }
 }
