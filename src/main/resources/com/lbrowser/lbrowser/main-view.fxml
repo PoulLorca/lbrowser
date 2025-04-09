@@ -1,14 +1,53 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import java.lang.*?>
-<?import java.util.*?>
-<?import javafx.scene.*?>
 <?import javafx.scene.control.*?>
+<?import javafx.scene.input.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.scene.web.*?>
+<?import org.kordamp.ikonli.javafx.*?>
 
-<AnchorPane xmlns="http://javafx.com/javafx"
-            xmlns:fx="http://javafx.com/fxml"
-            fx:controller="com.lbrowser.lbrowser.MainView"
-            prefHeight="400.0" prefWidth="600.0" >
-
+<AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.lbrowser.lbrowser.MainViewController">
+   <children>
+      <WebView fx:id="web_view" layoutX="11.0" layoutY="11.0" prefHeight="381.0" prefWidth="577.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="50.0" />
+      <TextField fx:id="web_url" layoutX="14.0" layoutY="14.0" prefHeight="30.0" prefWidth="568.0" AnchorPane.leftAnchor="150.0" AnchorPane.rightAnchor="70.0" AnchorPane.topAnchor="10.0" />
+      <Button fx:id="reload_button" layoutX="-12.0" layoutY="13.0" maxWidth="35.0" minWidth="35.0" mnemonicParsing="false" onAction="#reload" prefWidth="35.0" AnchorPane.leftAnchor="100.0" AnchorPane.topAnchor="13.0">
+         <graphic>
+            <FontIcon iconLiteral="fth-rotate-cw" iconSize="16" />
+         </graphic>
+      </Button>
+      <Button fx:id="prev_button" layoutX="14.0" layoutY="13.0" maxWidth="35.0" minWidth="35.0" mnemonicParsing="false" onAction="#goBack" prefWidth="35.0" AnchorPane.leftAnchor="10.0" AnchorPane.topAnchor="13.0" >
+         <graphic>
+            <FontIcon iconLiteral="fth-arrow-left-circle" iconSize="16" />
+         </graphic>
+      </Button>
+      <Button fx:id="next_button" layoutX="38.0" layoutY="13.0" maxWidth="35.0" minWidth="35.0" mnemonicParsing="false" onAction="#goForward" prefWidth="35.0" AnchorPane.leftAnchor="55.0" AnchorPane.topAnchor="13.0" >
+         <graphic>
+            <FontIcon iconLiteral="fth-arrow-right-circle" iconSize="16" />
+         </graphic>
+      </Button>
+      <MenuButton layoutX="470.0" layoutY="13.0" maxWidth="50.0" minWidth="50.0" mnemonicParsing="false" prefWidth="50.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="13.0">
+         <graphic>
+            <FontIcon iconLiteral="fth-more-vertical" iconSize="16" />
+         </graphic>
+        <items>
+           <MenuItem mnemonicParsing="false" onAction="#zoomIn" text="Zoom In">
+              <accelerator>
+                 <KeyCodeCombination alt="UP" code="PLUS" control="DOWN" meta="UP" shift="UP" shortcut="UP" />
+              </accelerator>
+           </MenuItem>
+           <MenuItem mnemonicParsing="false" onAction="#zoomOut" text="Zoom Out">
+              <accelerator>
+                 <KeyCodeCombination alt="UP" code="MINUS" control="DOWN" meta="UP" shift="UP" shortcut="UP" />
+              </accelerator>
+           </MenuItem>
+           <MenuItem mnemonicParsing="false" onAction="#zoomReset" text="Reset Zoom" />
+           <MenuItem mnemonicParsing="false" onAction="#showHistory" text="History">
+              <accelerator>
+                 <KeyCodeCombination alt="UP" code="H" control="DOWN" meta="UP" shift="UP" shortcut="UP" />
+              </accelerator>
+           </MenuItem>
+           <MenuItem mnemonicParsing="false" text="About" />
+        </items>
+      </MenuButton>
+   </children>
 </AnchorPane>
