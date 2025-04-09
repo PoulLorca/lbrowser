@@ -22,8 +22,6 @@ import java.util.ResourceBundle;
 
 public class MainViewController implements Initializable {
     @FXML
-    public WebView web_view;
-    @FXML
     public TextField web_url;
     @FXML
     public Button reload_button;
@@ -38,7 +36,6 @@ public class MainViewController implements Initializable {
 
     private static final String DEFAULT_URL = "https://www.startpage.com";
     private static final String USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/605.1 (KHTML, like Gecko) Lbrowser/1.0";
-    //private WebEngine webEngine;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -252,16 +249,16 @@ public class MainViewController implements Initializable {
         }
     }
 
-    private void updateNavigationButtons(Tab tab){
-        if(tab != null && tab.getContent() instanceof WebView){
+    private void updateNavigationButtons(Tab tab) {
+        if (tab != null && tab.getContent() instanceof WebView) {
             WebEngine engine = ((WebView) tab.getContent()).getEngine();
             WebHistory history = engine.getHistory();
             boolean isLoading = engine.getLoadWorker().isRunning();
 
-            prev_button.setDisable(history.getCurrentIndex() <= 0 || isLoading);
-            next_button.setDisable(history.getCurrentIndex() >= history.getEntries().size() - 1 || isLoading);
-            reload_button.setDisable(isLoading);
-        }else{
+            prev_button.setDisable(history.getCurrentIndex() <= 0 );
+            next_button.setDisable(history.getCurrentIndex() >= history.getEntries().size() - 1);
+            reload_button.setDisable(!isLoading);
+        } else {
             prev_button.setDisable(true);
             next_button.setDisable(true);
             reload_button.setDisable(true);
