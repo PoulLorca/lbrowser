@@ -1,14 +1,12 @@
 package com.lbrowser.lbrowser;
 
+import javafx.application.Platform;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Worker;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.Button;
-import javafx.scene.control.Tab;
-import javafx.scene.control.TabPane;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
 import javafx.scene.web.PopupFeatures;
 import javafx.scene.web.WebEngine;
@@ -33,22 +31,28 @@ public class MainViewController implements Initializable {
     public Button new_tab_button;
     @FXML
     public TabPane tab_pane;
+    @FXML
+    public ProgressIndicator loading_indicator;
 
     private static final String DEFAULT_URL = "https://www.startpage.com";
     private static final String USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/605.1 (KHTML, like Gecko) Lbrowser/1.0";
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        hideLoadingIndicator();
         createNewTab(DEFAULT_URL);
 
         tab_pane.getSelectionModel().selectedItemProperty().addListener((observable, oldTab, newTab) -> {
             if(newTab != null) {
                 updateUrlBarFromTab(newTab);
                 updateNavigationButtons(newTab);
+                updateLoadingIndicatorVisibility(newTab);
             }else{
                 web_url.clear();
                 prev_button.setDisable(true);
                 next_button.setDisable(true);
+                reload_button.setDisable(true);
+                hideLoadingIndicator();
             }
         });
 
@@ -60,6 +64,35 @@ public class MainViewController implements Initializable {
             }
         });
     }
+
+    private void showLoadingIndicator(){
+        if (loading_indicator != null) {
+            loading_indicator.setVisible(true);
+            loading_indicator.setManaged(true);
+        }
+    }
+
+    private void hideLoadingIndicator() {
+        if (loading_indicator != null) {
+            loading_indicator.setVisible(false);
+            loading_indicator.setManaged(false);
+        }
+    }
+
+    private void updateLoadingIndicatorVisibility(Tab tab){
+        if (tab != null && tab.getContent() instanceof WebView){
+            WebEngine engine = ((WebView) tab.getContent()).getEngine();
+            Worker.State state = engine.getLoadWorker().getState();
+            if (state == Worker.State.RUNNING || state == Worker.State.SCHEDULED) {
+                showLoadingIndicator();
+            } else {
+                hideLoadingIndicator();
+            }
+        }else{
+            hideLoadingIndicator();
+        }
+    }
+
 
     private Tab getCurrentTab() {
         return tab_pane.getSelectionModel().getSelectedItem();
@@ -91,29 +124,56 @@ public class MainViewController implements Initializable {
         });
 
         newWebEngine.titleProperty().addListener((observable, oldTitle, newTitle) -> {
-            if (newTitle != null && !newTitle.trim().isEmpty()){
-                newTab.setText(newTitle);
-            }else{
-                String loc = newWebEngine.getLocation();
-                newTab.setText(loc != null && !loc.trim().isEmpty() ? loc : "New Tab");
+            Worker.State state = newWebEngine.getLoadWorker().getState();
+            if(state != Worker.State.RUNNING && state != Worker.State.SCHEDULED){
+                if (newTitle != null && !newTitle.trim().isEmpty()){
+                    newTab.setText(newTitle);
+                }else{
+                    String loc = newWebEngine.getLocation();
+                    newTab.setText(loc != null && !loc.trim().isEmpty() ? loc : "New Tab");
+                }
             }
         });
 
         newWebEngine.getLoadWorker().stateProperty().addListener((observable, oldState, newState) -> {
-            if (newState == Worker.State.SUCCEEDED){
-                if(tab_pane.getSelectionModel().getSelectedItem() == newTab){
-                    updateNavigationButtons(newTab);
+            boolean isSelectedTab = (tab_pane.getSelectionModel().getSelectedItem() == newTab);
+
+            if(isSelectedTab){
+                if (newState == Worker.State.RUNNING || newState == Worker.State.SCHEDULED){
+                    showLoadingIndicator();
+                    newTab.setText("Loading...");
+                }else{
+                    hideLoadingIndicator();
+
                     String title = newWebEngine.getTitle();
-                    if (title != null && !title.trim().isEmpty()){
+                    String loc = newWebEngine.getLocation();
+
+                    if (title != null && !title.trim().isEmpty()) {
                         newTab.setText(title);
+                    }else if (loc != null && !loc.trim().isEmpty()) {
+                        newTab.setText(loc);
+                    }else if (newState == Worker.State.FAILED){
+                        newTab.setText("Load failed");
                     }else{
                         newTab.setText(newWebEngine.getLocation() != null ? newWebEngine.getLocation() : "Loaded Tab");
                     }
                 }
-            }else if (newState == Worker.State.FAILED){
-                newTab.setText("Error Loading");
-                if (tab_pane.getSelectionModel().getSelectedItem() == newTab){
-                    updateNavigationButtons(newTab);
+                updateNavigationButtons(newTab);
+            }else{
+                if(newState == Worker.State.RUNNING || newState == Worker.State.SCHEDULED){showLoadingIndicator();
+                    newTab.setText("Loading...");
+                } else if (newState == Worker.State.FAILED) {
+                    newTab.setText("Load failed");
+                } else if (newState == Worker.State.SUCCEEDED) {
+                    String title = newWebEngine.getTitle();
+                    String loc = newWebEngine.getLocation();
+                    if(title != null && !title.trim().isEmpty()) {
+                        newTab.setText(title);
+                    }else if (loc != null && !loc.trim().isEmpty()) {
+                        newTab.setText(loc);
+                    }else {
+                        newTab.setText("Loaded Tab");
+                    }
                 }
             }
         });
@@ -130,7 +190,15 @@ public class MainViewController implements Initializable {
         newTab.setClosable(true);
 
         newTab.setOnCloseRequest(event -> {
-            System.out.println("Tab closed: " + newTab.getText());
+            WebView webViewToClose = (WebView) newTab.getContent();
+            if (webViewToClose != null) {
+                webViewToClose.getEngine().getLoadWorker().cancel();
+                webViewToClose.getEngine().load(null);
+            }
+
+            if (tab_pane.getTabs().size() == 1) {
+                Platform.exit();
+            }
         });
 
         tab_pane.getTabs().add(newTab);
@@ -287,11 +355,12 @@ public class MainViewController implements Initializable {
         if (tab != null && tab.getContent() instanceof WebView) {
             WebEngine engine = ((WebView) tab.getContent()).getEngine();
             WebHistory history = engine.getHistory();
-            boolean isLoading = engine.getLoadWorker().isRunning();
+            Worker.State state = engine.getLoadWorker().getState();
+            boolean isLoading = (state == Worker.State.RUNNING || state == Worker.State.SCHEDULED);
 
             prev_button.setDisable(history.getCurrentIndex() <= 0 );
-            next_button.setDisable(history.getCurrentIndex() >= history.getEntries().size() - 1);
-            reload_button.setDisable(!isLoading);
+            next_button.setDisable(history.getCurrentIndex() >= history.getEntries().size() - 1 );
+            reload_button.setDisable(isLoading);
         } else {
             prev_button.setDisable(true);
             next_button.setDisable(true);

@@ -6,6 +6,7 @@
 <?import javafx.scene.web.*?>
 <?import org.kordamp.ikonli.javafx.*?>
 
+<?import javafx.geometry.Insets?>
 <AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.lbrowser.lbrowser.MainViewController">
    <children>
       <HBox alignment="CENTER_LEFT" spacing="5.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="10.0">
@@ -24,6 +25,11 @@
                <FontIcon iconLiteral="fth-rotate-cw" iconSize="16" />
             </graphic>
          </Button>
+         <ProgressIndicator fx:id="loading_indicator" prefHeight="20.0" prefWidth="20.0" visible="false" managed="false">
+            <HBox.margin>
+               <Insets left="5.0" right="5.0" />
+            </HBox.margin>
+         </ProgressIndicator>
          <Button fx:id="new_tab_button" maxWidth="35.0" minWidth="35.0" mnemonicParsing="false" onAction="#handleNewTabButton" prefWidth="35.0">
             <graphic>
                <FontIcon iconLiteral="fth-plus-square" iconSize="16" />
