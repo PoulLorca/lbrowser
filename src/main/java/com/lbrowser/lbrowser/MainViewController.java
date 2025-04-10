@@ -221,12 +221,46 @@ public class MainViewController implements Initializable {
         if (engine != null){
             WebHistory history = engine.getHistory();
             ObservableList<WebHistory.Entry> entries = history.getEntries();
-            System.out.println("--Browser History of the current tab");
+
+            Tab historyTab = new Tab("History");
+            WebView historyView = new WebView();
+            historyTab.setContent(historyView);
+
+            StringBuilder htmlBuilder = new StringBuilder();
+            htmlBuilder.append("<html><head>");
+            htmlBuilder.append("<style>");
+            htmlBuilder.append("body { font-family: Arial, sans-serif; margin: 20px; }");
+            htmlBuilder.append("h1 { color: #333; }");
+            htmlBuilder.append(".history-item { border-bottom: 1px solid #eee; padding: 10px; margin: 5px 0; }");
+            htmlBuilder.append(".history-item:hover { background-color: #f5f5f5; }");
+            htmlBuilder.append(".history-title { font-weight: bold; font-size: 16px; color: #1a73e8; cursor: pointer; }");
+            htmlBuilder.append(".history-url { color: #666; font-size: 14px; margin-top: 5px; }");
+            htmlBuilder.append(".history-date { color: #999; font-size: 12px; margin-top: 5px; }");
+            htmlBuilder.append("</style>");
+            htmlBuilder.append("</head><body>");
+            htmlBuilder.append("<h1>Browsing History</h1>");
+            htmlBuilder.append("<small><i>This browsing history is limited to the current tab and will not be saved or stored anywhere. It will be lost once the tab is closed.</i></small>");
+
             for (WebHistory.Entry entry : entries){
-                System.out.println("Title: " + entry.getTitle() + ", URL: " + entry.getUrl() + ", Visited: " + entry.getLastVisitedDate());
+                String title = entry.getTitle();
+                String url = entry.getUrl();
+                String visitDate = entry.getLastVisitedDate().toString();
+
+                htmlBuilder.append("<div class='history-item'>");
+                htmlBuilder.append("<div class='history-title' onclick='window.location.href=\"" + url + "\"'>" +
+                        (title != null && !title.isEmpty() ? title : url) + "</div>");
+                htmlBuilder.append("<div class='history-url'>" + url + "</div>");
+                htmlBuilder.append("<div class='history-date'>Seen: " + visitDate + "</div>");
+                htmlBuilder.append("</div>");
             }
-            System.out.println("Current Index: " + history.getCurrentIndex());
-            System.out.println("-----------------");
+
+            htmlBuilder.append("</body></html>");
+
+            historyView.getEngine().loadContent(htmlBuilder.toString());
+            historyView.getEngine().setCreatePopupHandler(request -> getCurrentWebEngine());
+
+            tab_pane.getTabs().add(historyTab);
+            tab_pane.getSelectionModel().select(historyTab);
         }else{
             System.out.println("No current WebEngine found.");
         }
