@@ -33,6 +33,10 @@ public class MainViewController implements Initializable {
     public TabPane tab_pane;
     @FXML
     public ProgressIndicator loading_indicator;
+    @FXML
+    public CheckMenuItem noAddModeMenuItem;
+
+    private AdBlocker adBlocker;
 
     private static final String DEFAULT_URL = "https://www.startpage.com";
     private static final String USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/605.1 (KHTML, like Gecko) Lbrowser/1.0";
@@ -40,6 +44,8 @@ public class MainViewController implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         hideLoadingIndicator();
+        adBlocker = new AdBlocker();
+        noAddModeMenuItem.setSelected(adBlocker.isEnabled());
         createNewTab(DEFAULT_URL);
 
         tab_pane.getSelectionModel().selectedItemProperty().addListener((observable, oldTab, newTab) -> {
@@ -109,11 +115,17 @@ public class MainViewController implements Initializable {
         WebView currentWebView = getCurrentWebView();
         return (currentWebView != null) ? currentWebView.getEngine() : null;}
 
+    private WebEngine getWebEngineFromTab(Tab tab) {
+        if (tab != null && tab.getContent() instanceof WebView) {
+            return ((WebView) tab.getContent()).getEngine();
+        }
+        return null;
+    }
+
     private Tab createNewTab(String urlToLoad){
         Tab newTab = new Tab("Loading...");
         WebView newWebView = new WebView();
         WebEngine newWebEngine = newWebView.getEngine();
-
         newWebEngine.setUserAgent(USER_AGENT);
 
         newWebEngine.locationProperty().addListener((observable, oldValue, newValue) -> {
@@ -159,6 +171,10 @@ public class MainViewController implements Initializable {
                     }
                 }
                 updateNavigationButtons(newTab);
+                updateUrlBarFromTab(newTab);
+                if (newState == Worker.State.SUCCEEDED) {
+                    applyAdBlockCssToEngine(newWebEngine);
+                }
             }else{
                 if(newState == Worker.State.RUNNING || newState == Worker.State.SCHEDULED){showLoadingIndicator();
                     newTab.setText("Loading...");
@@ -366,5 +382,39 @@ public class MainViewController implements Initializable {
             next_button.setDisable(true);
             reload_button.setDisable(true);
         }
+    }
+
+    public void noAddMode(ActionEvent actionEvent) {
+        if (adBlocker == null || noAddModeMenuItem == null) {
+            return;
+        }
+        boolean newState = noAddModeMenuItem.isSelected();
+        adBlocker.setEnabled(newState);
+        applyAdBlockCssToCurrentTab();
+    }
+
+    private void applyAdBlockCssToEngine(WebEngine engine){
+        if (engine == null) return;
+
+        Platform.runLater(() -> {
+            try {
+                if (adBlocker != null && adBlocker.isEnabled() && adBlocker.areRulesLoaded()) {
+                    String currentUrl = engine.getLocation();
+                    String cssContent = adBlocker.getEffectiveCssForDomain(currentUrl);
+                    String dataUrl = adBlocker.createDataUrlForCss(cssContent);
+                    if (dataUrl != null) {
+                        engine.setUserStyleSheetLocation(dataUrl);
+                        System.out.println("Applied AdBlockCSS for: " + currentUrl);
+                    }
+                }
+            }catch (Exception e){
+                System.err.println("Error applying CSS: " + e.getMessage());
+                e.printStackTrace();
+            }
+        });
+    }
+
+    private void applyAdBlockCssToCurrentTab(){
+        applyAdBlockCssToEngine(getCurrentWebEngine());
     }
 }
