@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<?import javafx.geometry.Insets?>
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.lbrowser.lbrowser.MediaSelectorController"
+            prefWidth="800" prefHeight="600">
+    <top>
+        <HBox spacing="10" alignment="CENTER_LEFT">
+            <padding>
+                <Insets top="10" right="10" bottom="10" left="10"/>
+            </padding>
+            <CheckBox fx:id="selectAllCheckBox" text="Select/Deselect All"/>
+            <Label text="Total items:"/>
+            <Label fx:id="counterLabel"/>
+        </HBox>
+    </top>
+
+    <center>
+        <ListView fx:id="mediaListView" style="-fx-cell-size: 150px; -fx-font-size: 14px;">
+            <BorderPane.margin>
+                <Insets top="10" right="10" bottom="10" left="10"/>
+            </BorderPane.margin>
+        </ListView>
+    </center>
+
+    <bottom>
+        <HBox spacing="10" alignment="CENTER_RIGHT">
+            <padding>
+                <Insets top="10" right="10" bottom="10" left="10"/>
+            </padding>
+            <Button text="Download Selected" onAction="#downloadSelected"
+                    style="-fx-font-size: 14px; -fx-pref-width: 180px; -fx-pref-height: 35px;"/>
+            <Button text="Download All" onAction="#downloadAll"
+                    style="-fx-font-size: 14px; -fx-pref-width: 150px; -fx-pref-height: 35px;"/>
+        </HBox>
+    </bottom>
+</BorderPane>

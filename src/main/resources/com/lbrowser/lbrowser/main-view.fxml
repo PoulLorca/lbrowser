@@ -57,6 +57,7 @@
                      <KeyCodeCombination alt="UP" code="H" control="DOWN" meta="UP" shift="UP" shortcut="UP" />
                   </accelerator>
                </MenuItem>
+               <MenuItem mnemonicParsing="false" text="Media Sources" onAction="#showMediaSources" />
                <CheckMenuItem fx:id="noAddModeMenuItem" mnemonicParsing="false" text="Mode No-add" onAction="#noAddMode"/>
                <MenuItem mnemonicParsing="false" text="About" />
             </items>

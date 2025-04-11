@@ -7,4 +7,6 @@ module com.lbrowser.lbrowser {
 
     opens com.lbrowser.lbrowser to javafx.fxml;
     exports com.lbrowser.lbrowser;
+    exports com.lbrowser.lbrowser.media;
+    opens com.lbrowser.lbrowser.media to javafx.fxml;
 }

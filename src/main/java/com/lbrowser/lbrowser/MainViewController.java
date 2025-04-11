@@ -1,21 +1,31 @@
 package com.lbrowser.lbrowser;
 
+import com.lbrowser.lbrowser.media.MediaItem;
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Worker;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
 import javafx.scene.web.PopupFeatures;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebHistory;
 import javafx.scene.web.WebView;
+import javafx.stage.Stage;
 import javafx.util.Callback;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
 
+import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ResourceBundle;
+import java.util.*;
 
 
 public class MainViewController implements Initializable {
@@ -416,5 +426,114 @@ public class MainViewController implements Initializable {
 
     private void applyAdBlockCssToCurrentTab(){
         applyAdBlockCssToEngine(getCurrentWebEngine());
+    }
+
+    public void showMediaSources(){
+        WebEngine engine = getCurrentWebEngine();
+        Document dom = engine.getDocument();
+        String baseUrl = engine.getLocation();
+        Set<String> uniqueImageUrls = new HashSet<>();
+        Set<String> uniqueVideoUrls = new HashSet<>();
+        NodeList imageNodes = dom.getElementsByTagName("img");
+        NodeList videoNodes = dom.getElementsByTagName("video");
+        NodeList sourceNodes = dom.getElementsByTagName("source");
+
+        for (int i = 0; i < imageNodes.getLength(); i++) {
+            Element img = (Element) imageNodes.item(i);
+            String src = img.getAttribute("src");
+
+            if(src == null || src.isEmpty() || src.startsWith("data:")){
+                continue;
+            }
+
+            try{
+                URL absoluteUrl = new URL(new URL(baseUrl), src);
+                String absoluteSrc = absoluteUrl.toString();
+
+                if(absoluteSrc.startsWith("http")){
+                    uniqueImageUrls.add(absoluteSrc);
+                }
+            }catch (MalformedURLException e){
+                System.out.println("Invalid URL");
+            }
+
+        }
+
+        for (int i = 0; i < videoNodes.getLength(); i++) {
+            Element video = (Element) videoNodes.item(i);
+            String src = video.getAttribute("src");
+
+            if (src != null && !src.isEmpty() && !src.startsWith("data:")) {
+                try {
+                    URL absoluteUrl = new URL(new URL(baseUrl), src);
+                    String absoluteSrc = absoluteUrl.toString();
+
+                    if (absoluteSrc.startsWith("http")) {
+                        uniqueVideoUrls.add(absoluteSrc);
+                    }
+                } catch (MalformedURLException e) {
+                    // Ignorar URLs malformadas silenciosamente
+                }
+            }
+
+            NodeList videoSourceNodes = video.getElementsByTagName("source");
+            for (int j = 0; j < videoSourceNodes.getLength(); j++) {
+                Element source = (Element) videoSourceNodes.item(j);
+                String sourceSrc = source.getAttribute("src");
+
+                if (sourceSrc != null && !sourceSrc.isEmpty() && !sourceSrc.startsWith("data:")) {
+                    try {
+                        URL absoluteUrl = new URL(new URL(baseUrl), sourceSrc);
+                        String absoluteSrc = absoluteUrl.toString();
+
+                        if (absoluteSrc.startsWith("http")) {
+                            uniqueVideoUrls.add(absoluteSrc);
+                        }
+                    } catch (MalformedURLException e) {
+
+                    }
+                }
+            }
+        }
+
+        for (int j = 0; j < sourceNodes.getLength(); j++) {
+            Element source = (Element) sourceNodes.item(j);
+            String sourceSrc = source.getAttribute("src");
+            String type = source.getAttribute("type");
+
+            if (sourceSrc != null && !sourceSrc.isEmpty() && !sourceSrc.startsWith("data:")) {
+                try {
+                    URL absoluteUrl = new URL(new URL(baseUrl), sourceSrc);
+                    String absoluteSrc = absoluteUrl.toString();
+
+                    if (absoluteSrc.startsWith("http")) {
+                        uniqueVideoUrls.add(absoluteSrc);
+                    }
+                } catch (MalformedURLException e) {
+                    System.out.println("URL source malformed: " + sourceSrc);
+                }
+            }
+        }
+
+
+        List<MediaItem> items = new ArrayList<>();
+        uniqueImageUrls.forEach(url -> items.add(new MediaItem(url, "image")));
+        uniqueVideoUrls.forEach(url -> items.add(new MediaItem(url, "video")));
+
+        Platform.runLater(() -> {
+            try{
+                FXMLLoader loader = new FXMLLoader(getClass().getResource("media-selector.fxml"));
+                Parent root = loader.load();
+                MediaSelectorController controller = loader.getController();
+                controller.setMediaItems(items);
+
+                Stage stage = new Stage();
+                stage.setScene(new Scene(root));
+                stage.setTitle("Select Media");
+                stage.show();
+            }catch(IOException e){
+                e.printStackTrace();
+            }
+        });
     }
 }
