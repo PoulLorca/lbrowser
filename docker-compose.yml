@@ -1,0 +1,51 @@
+version: "3.9"
+
+services:
+  tor:
+    image: leplusorg/tor:latest
+    container_name: tor_proxy
+    networks:
+      - lbrowser_net
+    ports:
+      - "127.0.0.1:9050:9050"
+    environment:
+      - SOCKS_HOSTNAME=0.0.0.0
+    volumes:
+      - tor_data:/var/lib/tor
+    restart: unless-stopped
+
+  zeronet:
+    image: nofish/zeronet:latest
+    container_name: zeronet_node
+    networks:
+      - lbrowser_net
+    ports:
+      - "127.0.0.1:43110:43110"
+    volumes:
+        - zeronet_data:/root/data
+    restart: unless-stopped
+
+  freenet:
+    image: 5nafu/freenet
+    container_name: freenet_node
+    networks:
+      - lbrowser_net
+    ports:
+      #FProxy exposed only to the local host
+      - "127.0.0.1:8888:8888"
+      #Control port
+      - "127.0.0.1:9481:9481"
+      - "12345:12345/udp" #Freenet's default port
+      - "12346:12346/udp" #Freenet's default port
+    volumes:
+      - freenet_data:/data
+    restart: unless-stopped
+
+volumes:
+  tor_data:
+  zeronet_data:
+  freenet_data:
+
+networks:
+  lbrowser_net:
+    driver: bridge

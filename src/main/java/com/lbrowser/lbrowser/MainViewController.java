@@ -1,6 +1,7 @@
 package com.lbrowser.lbrowser;
 
 import com.lbrowser.lbrowser.media.MediaItem;
+import com.lbrowser.lbrowser.modes.NetworkModeManager;
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Worker;
@@ -26,6 +27,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.*;
+import java.util.logging.Logger;
 
 
 public class MainViewController implements Initializable {
@@ -45,18 +47,34 @@ public class MainViewController implements Initializable {
     public ProgressIndicator loading_indicator;
     @FXML
     public CheckMenuItem noAddModeMenuItem;
+    @FXML
+    public MenuButton options_menu;
+
+    private NetworkModeManager networkModeManager;
+    private ToggleGroup networkModeToggleGroup;
 
     private AdBlocker adBlocker;
 
     private static final String DEFAULT_URL = "https://www.startpage.com";
     private static final String USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/605.1 (KHTML, like Gecko) Lbrowser/1.0";
+    private static final Logger LOGGER = Logger.getLogger(MainViewController.class.getName());
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        networkModeManager = new NetworkModeManager();
+        networkModeToggleGroup = new ToggleGroup();
+
+        createNetworkModeMenu();
+
         hideLoadingIndicator();
         adBlocker = new AdBlocker();
-        noAddModeMenuItem.setSelected(adBlocker.isEnabled());
-        createNewTab(DEFAULT_URL);
+        if (noAddModeMenuItem != null){
+            noAddModeMenuItem.setSelected(adBlocker.isEnabled());
+        }else{
+            LOGGER.warning("noAddModeMenuItem is null");
+        }
+
+        createNewTab(networkModeManager.getCurrentModeStartUrl());
 
         tab_pane.getSelectionModel().selectedItemProperty().addListener((observable, oldTab, newTab) -> {
             if(newTab != null) {
@@ -106,6 +124,41 @@ public class MainViewController implements Initializable {
             }
         }else{
             hideLoadingIndicator();
+        }
+    }
+
+    private void createNetworkModeMenu(){
+        Menu modesMenu = new Menu("Net modes");
+
+        for (NetworkModeManager.NetworkMode mode : NetworkModeManager.NetworkMode.values()){
+            RadioMenuItem modeItem = new RadioMenuItem(mode.getDisplayName());
+            modeItem.setToggleGroup(networkModeToggleGroup);
+            modeItem.setUserData(mode);
+
+            if(mode == networkModeManager.getCurrentMode()){
+                modeItem.setSelected(true);
+            }
+
+            modeItem.setOnAction(event -> {
+                NetworkModeManager.NetworkMode selectedMode = (NetworkModeManager.NetworkMode) modeItem.getUserData();
+                LOGGER.info("Selected network mode: " + selectedMode.getDisplayName());
+
+                networkModeManager.setMode(selectedMode);
+
+                String startUrl = networkModeManager.getModeStartUrl(selectedMode);
+
+                LOGGER.info("Opening new tab for mode " + selectedMode + " with URL: " + startUrl);
+                createNewTab(startUrl);
+            });
+            modesMenu.getItems().add(modeItem);
+        }
+
+        if(options_menu != null && options_menu.getItems().size() >= 8){
+            options_menu.getItems().add(8, modesMenu);
+        } else if (options_menu != null) {
+            options_menu.getItems().add(modesMenu);
+        }else{
+            LOGGER.warning("options_menu is null. Cannot add Net Modes menu.");
         }
     }
 
@@ -230,10 +283,15 @@ public class MainViewController implements Initializable {
         tab_pane.getTabs().add(newTab);
         tab_pane.getSelectionModel().select(newTab);
 
-        if (urlToLoad != null && !urlToLoad.trim().isEmpty()){
-            loadUrl(newWebEngine, formatUrl(urlToLoad));
-        }else{
-            loadUrl(newWebEngine, formatUrl(DEFAULT_URL));
+        String finalUrlToLoad = urlToLoad;
+        if (finalUrlToLoad == null || finalUrlToLoad.trim().isEmpty()){
+            finalUrlToLoad = networkModeManager.getCurrentModeStartUrl();
+            LOGGER.info("No URL provided for new tab, using default for current mode: " + finalUrlToLoad);
+        }
+
+        loadUrl(newWebEngine, formatUrl(finalUrlToLoad));
+
+        if(finalUrlToLoad.equals(networkModeManager.getModeStartUrl(NetworkModeManager.NetworkMode.NORMAL)) && newTab.getText().equals("Loading...")){
             newTab.setText("New Tab");
         }
 

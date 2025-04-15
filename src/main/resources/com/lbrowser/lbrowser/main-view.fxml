@@ -7,6 +7,7 @@
 <?import org.kordamp.ikonli.javafx.*?>
 
 <?import javafx.geometry.Insets?>
+<?import com.sun.javafx.scene.control.ContextMenuContent.MenuBox?>
 <AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.lbrowser.lbrowser.MainViewController">
    <children>
       <HBox alignment="CENTER_LEFT" spacing="5.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="10.0">
@@ -36,7 +37,7 @@
             </graphic>
          </Button>
          <TextField fx:id="web_url" prefHeight="30.0" HBox.hgrow="ALWAYS" />
-         <MenuButton maxWidth="50.0" minWidth="50.0" mnemonicParsing="false" prefWidth="50.0">
+         <MenuButton fx:id="options_menu" maxWidth="50.0" minWidth="50.0" mnemonicParsing="false" prefWidth="50.0">
             <graphic>
                <FontIcon iconLiteral="fth-more-vertical" iconSize="16" />
             </graphic>
@@ -52,12 +53,14 @@
                   </accelerator>
                </MenuItem>
                <MenuItem mnemonicParsing="false" onAction="#zoomReset" text="Reset Zoom" />
+               <SeparatorMenuItem />
                <MenuItem mnemonicParsing="false" onAction="#showHistory" text="History">
                   <accelerator>
                      <KeyCodeCombination alt="UP" code="H" control="DOWN" meta="UP" shift="UP" shortcut="UP" />
                   </accelerator>
                </MenuItem>
                <MenuItem mnemonicParsing="false" text="Media Sources" onAction="#showMediaSources" />
+               <SeparatorMenuItem />
                <CheckMenuItem fx:id="noAddModeMenuItem" mnemonicParsing="false" text="Mode No-add" onAction="#noAddMode"/>
                <MenuItem mnemonicParsing="false" text="About" />
             </items>
