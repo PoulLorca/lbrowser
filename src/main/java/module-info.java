@@ -4,7 +4,9 @@ module com.lbrowser.lbrowser {
 
     requires org.controlsfx.controls;
     requires javafx.web;
-    requires java.logging;
+    requires qtjambi.webenginewidgets;
+    requires qtjambi.webenginecore;
+    requires qtjambi.network;
 
     opens com.lbrowser.lbrowser to javafx.fxml;
     exports com.lbrowser.lbrowser;

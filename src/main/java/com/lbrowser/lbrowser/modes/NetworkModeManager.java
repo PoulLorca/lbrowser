@@ -1,5 +1,8 @@
 package com.lbrowser.lbrowser.modes;
 
+import io.qt.network.QNetworkProxy;
+import io.qt.webengine.core.QWebEngineProfile;
+
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -32,7 +35,6 @@ public class NetworkModeManager {
     private NetworkMode currentMode = NetworkMode.NORMAL;
 
     public NetworkModeManager(){
-        clearTorProxySettings();
         LOGGER.log(Level.INFO, "NetworkModeManager initialized. Current mode: {0}", currentMode);
     }
 
@@ -43,12 +45,6 @@ public class NetworkModeManager {
 
         LOGGER.log(Level.INFO, "Switching network mode from {0} to {1}", new Object[]{this.currentMode, mode});
         this.currentMode = mode;
-
-        if(mode == NetworkMode.TOR){
-            applyTorProxySettings();
-        }else{
-            clearTorProxySettings();
-        }
     }
 
     public NetworkMode getCurrentMode() {
@@ -63,17 +59,23 @@ public class NetworkModeManager {
         return currentMode.getStartUrl();
     }
 
-    private void applyTorProxySettings() {
-        LOGGER.info("Applying Tor SOCKS proxy settings (127.0.0.1:9050");
-        System.setProperty("java.net.useSystemProxies", "false");
-        System.setProperty("socksProxyHost", "127.0.0.1");
-        System.setProperty("socksProxyPort", "9050");
-    }
+    public void configureProxyForProfile(QWebEngineProfile profile) {
+        if (profile == null) {
+            LOGGER.warning("Cannot configure proxy for null profile");
+            return;
+        }
 
-    private void clearTorProxySettings() {
-        LOGGER.info("Clearing Tor SOCKS proxy settings");
-        System.clearProperty("socksProxyHost");
-        System.clearProperty("socksProxyPort");
-        //System.setProperty("java.net.useSystemProxies", "true"); Restore the system proxies if needed
+        QNetworkProxy proxy = new QNetworkProxy();
+
+        if(currentMode == NetworkMode.TOR){
+            LOGGER.info("Configuring Tor SOCKS5 proxy for profile: 127.0.0.1:9050");
+            proxy.setType(QNetworkProxy.ProxyType.Socks5Proxy);
+            proxy.setHostName("127.0.0.1");
+            proxy.setPort(9050);
+        }else{
+            LOGGER.info("Configuring NoProxy for profile");
+            proxy.setType(QNetworkProxy.ProxyType.NoProxy);
+        }
+        QNetworkProxy.setApplicationProxy(proxy);
     }
 }
