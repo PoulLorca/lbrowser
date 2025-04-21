@@ -1,15 +1,11 @@
-version: "3.9"
-
 services:
   tor:
-    image: leplusorg/tor:latest
+    image: dockurr/tor:latest
     container_name: tor_proxy
     networks:
       - lbrowser_net
     ports:
       - "127.0.0.1:9050:9050"
-    environment:
-      - SOCKS_HOSTNAME=0.0.0.0
     volumes:
       - tor_data:/var/lib/tor
     restart: unless-stopped
@@ -21,6 +17,8 @@ services:
       - lbrowser_net
     ports:
       - "127.0.0.1:43110:43110"
+      - "15441:15441"
+      - "15441:15441/udp"
     volumes:
         - zeronet_data:/root/data
     restart: unless-stopped
