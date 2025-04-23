@@ -11,14 +11,12 @@ services:
     restart: unless-stopped
 
   zeronet:
-    image: nofish/zeronet:latest
+    image: canewsin/zeronet:latest
     container_name: zeronet_node
     networks:
       - lbrowser_net
     ports:
       - "127.0.0.1:43110:43110"
-      - "15441:15441"
-      - "15441:15441/udp"
     volumes:
         - zeronet_data:/root/data
     restart: unless-stopped
