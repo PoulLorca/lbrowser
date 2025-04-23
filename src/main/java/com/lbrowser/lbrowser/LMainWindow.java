@@ -65,12 +65,12 @@ public class LMainWindow  extends QMainWindow {
         reloadButton.setToolTip("Reload");
         navigationToolBar.addWidget(reloadButton);
 
-        loadingProgressBar = new QProgressBar();
+        /*loadingProgressBar = new QProgressBar();
         loadingProgressBar.setRange(0, 0);
         loadingProgressBar.setTextVisible(false);
         loadingProgressBar.setMaximumWidth(30);
         loadingProgressBar.setVisible(false);
-        navigationToolBar.addWidget(loadingProgressBar);
+        navigationToolBar.addWidget(loadingProgressBar);*/
 
         newTabButton = new QToolButton();
         newTabButton.setIcon(QIcon.fromTheme("new-tab", new QIcon("classpath:icons/plus-circle.svg")));
@@ -90,10 +90,39 @@ public class LMainWindow  extends QMainWindow {
 
         setupOptionsMenu();
 
+        loadingProgressBar = new QProgressBar();
+        loadingProgressBar.setRange(0, 100);
+        loadingProgressBar.setValue(0);
+        loadingProgressBar.setTextVisible(false);
+        loadingProgressBar.setFixedHeight(3);
+        loadingProgressBar.setVisible(false);
+        loadingProgressBar.setStyleSheet(
+                "QProgressBar {" +
+                        "    border: none;" +
+                        "    background-color: transparent;" + // Fondo transparente
+                        "    height: 3px;" +                   // Altura (redundante si usas setFixedHeight)
+                        "}" +
+                        "QProgressBar::chunk {" +
+                        "    background-color: #3498db;" + // Color de la barra de progreso (azul)
+                        "    width: 1px;" +                // Estilo del chunk
+                        "}"
+        );
+
         tabWidget = new QTabWidget();
         tabWidget.setTabsClosable(true);
         tabWidget.setMovable(true);
-        setCentralWidget(tabWidget);
+
+        QVBoxLayout mainLayout = new QVBoxLayout();
+        mainLayout.setContentsMargins(0, 0, 0, 0);
+        mainLayout.setSpacing(0);
+
+        mainLayout.addWidget(loadingProgressBar);
+        mainLayout.addWidget(tabWidget);
+
+        QWidget centralContainer = new QWidget();
+        centralContainer.setLayout(mainLayout);
+
+        setCentralWidget(centralContainer);
 
         updateNavigationButtons();
     }
@@ -208,17 +237,28 @@ public class LMainWindow  extends QMainWindow {
         });
 
         webView.loadStarted.connect(() -> {
+            webView.page().setProperty("isLoading", true);
+
             int index = tabWidget.indexOf(webView);
             if(index != -1){
                 tabWidget.setTabText(index, "Loading...");
             }
             if(webView == getCurrentQtView()){
+                loadingProgressBar.setValue(0);
                 loadingProgressBar.setVisible(true);
                 updateNavigationButtons();
             }
         });
 
+        webView.loadProgress.connect(progress -> {
+            if(webView == getCurrentQtView()){
+                loadingProgressBar.setValue(progress);
+            }
+        });
+
         webView.loadFinished.connect(ok -> {
+            webView.page().setProperty("isLoading", false);
+
             int index = tabWidget.indexOf(webView);
             if(index != -1){
                 String title = webView.title();
@@ -270,6 +310,13 @@ public class LMainWindow  extends QMainWindow {
             QWebEngineView currentView = getCurrentQtView();
             if(currentView != null){
                 updateUiForView(currentView);
+                QWebEnginePage currentPage = currentView.page();
+                boolean isLoading = currentPage.property("isLoading") != null && (Boolean) currentPage.property("isLoading");
+                if(isLoading) {
+                    loadingProgressBar.setVisible(true);
+                }else{
+                    loadingProgressBar.setVisible(false);
+                }
             }else{
                 clearUiState();
             }
@@ -367,7 +414,7 @@ public class LMainWindow  extends QMainWindow {
         }
         urlLineEdit.setText(view.url().toString());
         updateNavigationButtons();
-        loadingProgressBar.setVisible(false);
+        //loadingProgressBar.setVisible(false);
     }
 
     private void updateNavigationButtons(){
@@ -389,7 +436,7 @@ public class LMainWindow  extends QMainWindow {
         backButton.setEnabled(false);
         forwardButton.setEnabled(false);
         reloadButton.setEnabled(false);
-        loadingProgressBar.setVisible(false);
+        //loadingProgressBar.setVisible(false);
     }
 
     @Override
