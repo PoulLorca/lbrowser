@@ -13,7 +13,6 @@ import java.util.logging.Logger;
 
 public class LMainWindow  extends QMainWindow {
     private static final Logger LOGGER = Logger.getLogger(LMainWindow.class.getName());
-
     private QToolBar navigationToolBar;
     private QLineEdit urlLineEdit;
     private QToolButton backButton;
@@ -260,10 +259,11 @@ public class LMainWindow  extends QMainWindow {
             if(webView == getCurrentQtView()){
                 loadingProgressBar.setVisible(false);
                 updateNavigationButtons();
-                urlLineEdit.setText(webView.url().toString());
-                // if (ok) applyAdBlockerCssToQtPage(webView.page());
+                if(ok) urlLineEdit.setText(webView.url().toString());
             }
-            // if (ok) applyAdBlockerCssToQtPage(webView.page());
+            if (ok) {
+                applyAdBlockerCssToQtPage(webView.page());
+            }
         });
 
         webView.page().newWindowRequested.connect(request -> {
@@ -393,6 +393,18 @@ public class LMainWindow  extends QMainWindow {
     private void toggleAdBlockMode(boolean checked){
         if (adBlocker == null) return;
         adBlocker.setEnabled(checked);
+
+        for(int i = 0; i < tabWidget.count(); i++){
+            QWidget widget = tabWidget.widget(i);
+            if(widget instanceof QWebEngineView){
+                QWebEnginePage page = ((QWebEngineView) widget).page();
+                Object isLoadingProp = page.property("isLoading");
+                boolean isLoading = isLoadingProp != null && (Boolean) isLoadingProp;
+                if(!isLoading){
+                    applyAdBlockerCssToQtPage(page);
+                }
+            }
+        }
     }
 
     private void showHistory(){
@@ -441,5 +453,40 @@ public class LMainWindow  extends QMainWindow {
         }
         event.accept();
         super.closeEvent(event);
+    }
+
+    private void applyAdBlockerCssToQtPage(QWebEnginePage page){
+        if(page == null || adBlocker == null) return;
+
+        String currentUrl = page.url().toString();
+        String cssToInject = "";
+
+        if(adBlocker.isEnabled() && adBlocker.areRulesLoaded()){
+            cssToInject = adBlocker.getEffectiveCssForDomain(currentUrl);
+            if(cssToInject == null ) cssToInject = "";
+        }
+
+        String escapedCss = cssToInject
+                .replace("\\", "\\\\")
+                .replace("`", "\\`")
+                .replace("${", "\\${");
+
+        String script = String.format(
+                "(function() {" +
+                        "  var css = `%s`;" +
+                        "  var styleId = 'lbrowser-adblock-style';" +
+                        "  var styleElement = document.getElementById(styleId);" +
+                        "  if (!styleElement) {" +
+                        "    styleElement = document.createElement('style');" +
+                        "    styleElement.id = styleId;" +
+                        "    (document.head || document.documentElement).appendChild(styleElement);" +
+                        "  }" +
+                        "  /* console.log('Applying AdBlock CSS (' + (css.length > 0 ? css.length + ' bytes' : 'empty') + ')'); */" + // Log JS opcional
+                        "  styleElement.textContent = css;" +
+                        "})();",
+                escapedCss
+        );
+
+        page.runJavaScript(script);
     }
 }
