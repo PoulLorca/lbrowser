@@ -65,13 +65,6 @@ public class LMainWindow  extends QMainWindow {
         reloadButton.setToolTip("Reload");
         navigationToolBar.addWidget(reloadButton);
 
-        /*loadingProgressBar = new QProgressBar();
-        loadingProgressBar.setRange(0, 0);
-        loadingProgressBar.setTextVisible(false);
-        loadingProgressBar.setMaximumWidth(30);
-        loadingProgressBar.setVisible(false);
-        navigationToolBar.addWidget(loadingProgressBar);*/
-
         newTabButton = new QToolButton();
         newTabButton.setIcon(QIcon.fromTheme("new-tab", new QIcon("classpath:icons/plus-circle.svg")));
         newTabButton.setToolTip("New Tab");
@@ -96,17 +89,10 @@ public class LMainWindow  extends QMainWindow {
         loadingProgressBar.setTextVisible(false);
         loadingProgressBar.setFixedHeight(3);
         loadingProgressBar.setVisible(false);
-        loadingProgressBar.setStyleSheet(
-                "QProgressBar {" +
-                        "    border: none;" +
-                        "    background-color: transparent;" + // Fondo transparente
-                        "    height: 3px;" +                   // Altura (redundante si usas setFixedHeight)
-                        "}" +
-                        "QProgressBar::chunk {" +
-                        "    background-color: #3498db;" + // Color de la barra de progreso (azul)
-                        "    width: 1px;" +                // Estilo del chunk
-                        "}"
-        );
+        QPalette palette = loadingProgressBar.palette();
+        palette.setColor(QPalette.ColorRole.Highlight, new QColor("#3498db"));
+        loadingProgressBar.setPalette(palette);
+
 
         tabWidget = new QTabWidget();
         tabWidget.setTabsClosable(true);
@@ -291,17 +277,27 @@ public class LMainWindow  extends QMainWindow {
     }
 
     private void closeTab(int index){
+        if (index < 0 || index >= tabWidget.count()) {
+            return;
+        }
+
         QWidget widget = tabWidget.widget(index);
         if(widget instanceof QWebEngineView){
             QWebEngineView view = (QWebEngineView) widget;
             view.stop();
-            view.close();
-            view.dispose();
-        }
-        tabWidget.removeTab(index);
 
-        if(tabWidget.count() == 0) {
-            close();
+            view.loadStarted.disconnect();
+            view.loadProgress.disconnect();
+            view.loadFinished.disconnect();
+            view.titleChanged.disconnect();
+            view.urlChanged.disconnect();
+            view.page().newWindowRequested.disconnect();
+
+            view.stop();
+            tabWidget.removeTab(index);
+            view.dispose();
+        }else{
+            tabWidget.removeTab(index);
         }
     }
 
@@ -414,7 +410,7 @@ public class LMainWindow  extends QMainWindow {
         }
         urlLineEdit.setText(view.url().toString());
         updateNavigationButtons();
-        //loadingProgressBar.setVisible(false);
+
     }
 
     private void updateNavigationButtons(){
@@ -436,7 +432,6 @@ public class LMainWindow  extends QMainWindow {
         backButton.setEnabled(false);
         forwardButton.setEnabled(false);
         reloadButton.setEnabled(false);
-        //loadingProgressBar.setVisible(false);
     }
 
     @Override
@@ -445,5 +440,6 @@ public class LMainWindow  extends QMainWindow {
             closeTab(0);
         }
         event.accept();
+        super.closeEvent(event);
     }
 }
