@@ -12,7 +12,7 @@ public class NetworkModeManager {
     public enum NetworkMode {
         NORMAL("Normal Mode", "https://startpage.com"),
         TOR("Tor Mode", "https://check.torproject.org/"),
-        ZERONET("ZeroNet Mode", "http://127.0.0.1:43110/"),
+        ZERONET("ZeroNet Mode", "http://127.0.0.1:43111/"),
         FREENET("Freenet Mode", "http://127.0.0.1:8888/");
 
         private final String displayName;

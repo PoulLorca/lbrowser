@@ -34,8 +34,6 @@ public class LMainWindow  extends QMainWindow {
     public LMainWindow() {
         super();
 
-        System.out.println("HOLA GENTE QT!!!!");
-
         networkModeManager = new NetworkModeManager();
         adBlocker = new AdBlocker();
 
@@ -75,7 +73,7 @@ public class LMainWindow  extends QMainWindow {
         navigationToolBar.addWidget(loadingProgressBar);
 
         newTabButton = new QToolButton();
-        newTabButton.setIcon(QIcon.fromTheme("new-tab", new QIcon("classpath:icons/new-tab.png")));
+        newTabButton.setIcon(QIcon.fromTheme("new-tab", new QIcon("classpath:icons/plus-circle.svg")));
         newTabButton.setToolTip("New Tab");
         navigationToolBar.addWidget(newTabButton);
 
@@ -83,7 +81,7 @@ public class LMainWindow  extends QMainWindow {
         navigationToolBar.addWidget(urlLineEdit);
 
         optionsButton = new QToolButton();
-        optionsButton.setIcon(QIcon.fromTheme("application-menu", new QIcon("classpath:icons/application-menu.png")));
+        optionsButton.setIcon(QIcon.fromTheme("application-menu", new QIcon("classpath:icons/menu-dots-circle.svg")));
         optionsButton.setToolTip("Options");
         optionsButton.setPopupMode(QToolButton.ToolButtonPopupMode.InstantPopup);
         optionsMenu = new QMenu(this);
@@ -376,9 +374,9 @@ public class LMainWindow  extends QMainWindow {
         QWebEngineView view = getCurrentQtView();
         if(view != null){
             boolean isLoading = loadingProgressBar.isVisible();
-            backButton.setEnabled(!isLoading && view.page().action(QWebEnginePage.WebAction.Back).isEnabled());
-            forwardButton.setEnabled(!isLoading && view.page().action(QWebEnginePage.WebAction.Forward).isEnabled());
-            reloadButton.setEnabled(!isLoading && view.page().action(QWebEnginePage.WebAction.Reload).isEnabled());
+            backButton.setEnabled(view.page().action(QWebEnginePage.WebAction.Back).isEnabled());
+            forwardButton.setEnabled(view.page().action(QWebEnginePage.WebAction.Forward).isEnabled());
+            reloadButton.setEnabled(view.page().action(QWebEnginePage.WebAction.Reload).isEnabled());
         }else{
             backButton.setEnabled(false);
             forwardButton.setEnabled(false);

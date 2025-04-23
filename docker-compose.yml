@@ -16,7 +16,7 @@ services:
     networks:
       - lbrowser_net
     ports:
-      - "127.0.0.1:43110:43110"
+      - "127.0.0.1:43111:43110"
     volumes:
         - zeronet_data:/root/data
     restart: unless-stopped
