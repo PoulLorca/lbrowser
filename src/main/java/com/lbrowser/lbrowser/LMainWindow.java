@@ -1,8 +1,11 @@
 package com.lbrowser.lbrowser;
 
 import com.lbrowser.lbrowser.modes.NetworkModeManager;
+import io.qt.core.QList;
 import io.qt.core.QUrl;
-import io.qt.core.Qt;
+import io.qt.core.QDateTime;
+import io.qt.webengine.core.QWebEngineHistory;
+import io.qt.webengine.core.QWebEngineHistoryItem;
 import io.qt.gui.*;
 import io.qt.webengine.core.QWebEnginePage;
 import io.qt.webengine.core.QWebEngineProfile;
@@ -22,7 +25,6 @@ public class LMainWindow  extends QMainWindow {
     private QTabWidget tabWidget;
     private QDialog devToolsDialog;
     private QWebEngineView devToolsWebView;
-
     private NetworkModeManager networkModeManager;
     private AdBlocker adBlocker;
     private QActionGroup networkModeActionGroup;
@@ -417,8 +419,47 @@ public class LMainWindow  extends QMainWindow {
         }
     }
 
-    private void showHistory(){
-        //Needs implementation
+    private void showHistory() {
+        QWebEngineView originalView = getCurrentQtView();
+        if (originalView == null) return;
+
+        try {
+            QWebEngineView historyView = new QWebEngineView();
+            int tabIndex = tabWidget.addTab(historyView, "History");
+            tabWidget.setCurrentIndex(tabIndex);
+
+            StringBuilder htmlBuilder = new StringBuilder();
+            htmlBuilder.append("<html><head>")
+                    .append("<style>")
+                    .append("body { font-family: Arial, sans-serif; margin: 50px; line-height: 1.6; }")
+                    .append("h1 { color: #333; }")
+                    .append(".container { max-width: 800px; margin: 0 auto; }")
+                    .append(".info { background-color: #f8f9fa; border-left: 4px solid #4285f4; padding: 15px; margin: 20px 0; }")
+                    .append(".note { color: #666; font-style: italic; margin-top: 20px; }")
+                    .append("</style>")
+                    .append("</head><body>")
+                    .append("<div class='container'>")
+                    .append("<h1>Browsing History</h1>")
+                    .append("<div class='info'>")
+                    .append("<p><strong>No browsing history available</strong></p>")
+                    .append("<p>LBrowser is currently configured to prioritize your privacy by using:")
+                    .append("<ul>")
+                    .append("<li><code>NoPersistentCookies</code> - prevents websites from storing persistent cookies</li>")
+                    .append("<li><code>MemoryHttpCache</code> - keeps cache only in RAM, not on disk</li>")
+                    .append("</ul>")
+                    .append("<p>With these privacy-focused settings, browsing history is not maintained.</p>")
+                    .append("</div>")
+                    .append("<p class='note'>This is an intentional design choice to enhance privacy and security. ")
+                    .append("Future versions may include options for less restrictive modes, but the current focus ")
+                    .append("is on minimizing data persistence and maximizing privacy.</p>")
+                    .append("</div>")
+                    .append("</body></html>");
+
+            historyView.setHtml(htmlBuilder.toString(), new QUrl("about:blank"));
+        } catch (Exception e) {
+            System.err.println("Error showing the history: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     private void showMediaSources(){
