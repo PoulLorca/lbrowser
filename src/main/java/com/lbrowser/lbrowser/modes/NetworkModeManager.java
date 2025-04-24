@@ -2,6 +2,7 @@ package com.lbrowser.lbrowser.modes;
 
 import io.qt.network.QNetworkProxy;
 import io.qt.webengine.core.QWebEngineProfile;
+import io.qt.webengine.core.QWebEngineSettings;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -66,16 +67,30 @@ public class NetworkModeManager {
             return;
         }
 
+        // Security settings
+        profile.setHttpCacheType(QWebEngineProfile.HttpCacheType.MemoryHttpCache);
+        profile.setPersistentCookiesPolicy(QWebEngineProfile.PersistentCookiesPolicy.NoPersistentCookies);
+
         QNetworkProxy proxy = new QNetworkProxy();
 
-        if(currentMode == NetworkMode.TOR){
-            LOGGER.info("Configuring Tor SOCKS5 proxy for profile: 127.0.0.1:9050");
-            proxy.setType(QNetworkProxy.ProxyType.Socks5Proxy);
-            proxy.setHostName("127.0.0.1");
-            proxy.setPort(9050);
-        }else{
-            LOGGER.info("Configuring NoProxy for profile");
-            proxy.setType(QNetworkProxy.ProxyType.NoProxy);
+        switch(currentMode){
+            case TOR:
+                LOGGER.info("Configuring Tor SOCKS5 proxy: 127.0.0.1:9050");
+                proxy.setType(QNetworkProxy.ProxyType.Socks5Proxy);
+                proxy.setHostName("127.0.0.1");
+                proxy.setPort(9050);
+                break;
+
+            case I2P:
+                LOGGER.info("Configuring I2P HTTP proxy: 127.0.0.1:4444");
+                proxy.setType(QNetworkProxy.ProxyType.HttpProxy);
+                proxy.setHostName("127.0.0.1");
+                proxy.setPort(4444);
+                break;
+
+            default:
+                LOGGER.info("Configuring NoProxy");
+                proxy.setType(QNetworkProxy.ProxyType.NoProxy);
         }
         QNetworkProxy.setApplicationProxy(proxy);
     }

@@ -9,10 +9,7 @@ import io.qt.webengine.core.QWebEngineProfile;
 import io.qt.webengine.widgets.QWebEngineView;
 import io.qt.widgets.*;
 
-import java.util.logging.Logger;
-
 public class LMainWindow  extends QMainWindow {
-    private static final Logger LOGGER = Logger.getLogger(LMainWindow.class.getName());
     private QToolBar navigationToolBar;
     private QLineEdit urlLineEdit;
     private QToolButton backButton;
@@ -113,6 +110,8 @@ public class LMainWindow  extends QMainWindow {
     }
 
     private void setupOptionsMenu(){
+        optionsMenu.clear();
+
         QAction zoomInAction = optionsMenu.addAction("Zoom In");
         zoomInAction.setShortcut(new QKeySequence(Qt.Key.Key_Control , Qt.Key.Key_Plus));
         zoomInAction.triggered.connect(this::zoomIn);
@@ -139,9 +138,12 @@ public class LMainWindow  extends QMainWindow {
         noAdModeAction.setChecked(adBlocker.isEnabled());
         noAdModeAction.toggled.connect(this::toggleAdBlockMode);
 
+
         QMenu modesMenu = optionsMenu.addMenu("Net Modes");
         networkModeActionGroup = new QActionGroup(this);
         networkModeActionGroup.setExclusive(true);
+
+
 
         for(NetworkModeManager.NetworkMode mode : NetworkModeManager.NetworkMode.values()) {
             QAction modeAction = modesMenu.addAction(mode.getDisplayName());

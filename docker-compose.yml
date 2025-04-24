@@ -21,6 +21,22 @@ services:
         - zeronet_data:/root/data
     restart: unless-stopped
 
+  i2p:
+    image: geti2p/i2p:latest
+    container_name: i2p_node
+    networks:
+      - lbrowser_net
+    ports:
+      - "127.0.0.1:4444:4444"   # HTTP Proxy
+      - "127.0.0.1:7654:7654"   # I2CP Protocol
+      - "127.0.0.1:7657:7657"   # Router console
+      - "12345:12345/tcp"       # I2NP Protocol TCP
+      - "12345:12345/udp"       # I2NP Protocol UDP
+    volumes:
+      - i2p_config:/i2p/.i2p
+      - i2p_torrents:/i2psnark
+    restart: unless-stopped
+
   freenet:
     image: 5nafu/freenet
     container_name: freenet_node
@@ -31,8 +47,8 @@ services:
       - "127.0.0.1:8888:8888"
       #Control port
       - "127.0.0.1:9481:9481"
-      - "12345:12345/udp" #Freenet's default port
-      - "12346:12346/udp" #Freenet's default port
+      #- "12345:12345/udp" #Freenet's default port
+      #- "12346:12346/udp" #Freenet's default port
     volumes:
       - freenet_data:/data
     restart: unless-stopped
@@ -41,6 +57,8 @@ volumes:
   tor_data:
   zeronet_data:
   freenet_data:
+  i2p_config:
+  i2p_torrents:
 
 networks:
   lbrowser_net:
