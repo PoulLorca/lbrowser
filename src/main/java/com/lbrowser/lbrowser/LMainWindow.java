@@ -20,6 +20,8 @@ public class LMainWindow  extends QMainWindow {
     private QToolButton optionsButton;
     private QMenu optionsMenu;
     private QTabWidget tabWidget;
+    private QDialog devToolsDialog;
+    private QWebEngineView devToolsWebView;
 
     private NetworkModeManager networkModeManager;
     private AdBlocker adBlocker;
@@ -113,21 +115,21 @@ public class LMainWindow  extends QMainWindow {
         optionsMenu.clear();
 
         QAction zoomInAction = optionsMenu.addAction("Zoom In");
-        zoomInAction.setShortcut(new QKeySequence(Qt.Key.Key_Control , Qt.Key.Key_Plus));
+        zoomInAction.setShortcut(QKeySequence.fromString("Ctrl++"));
         zoomInAction.triggered.connect(this::zoomIn);
 
         QAction zoomOutAction = optionsMenu.addAction("Zoom Out");
-        zoomOutAction.setShortcut(new QKeySequence(Qt.Key.Key_Control , Qt.Key.Key_Minus));
+        zoomOutAction.setShortcut(QKeySequence.fromString("Ctrl+-"));
         zoomOutAction.triggered.connect(this::zoomOut);
 
         QAction resetZoomAction = optionsMenu.addAction("Reset Zoom");
-        resetZoomAction.setShortcut(new QKeySequence(Qt.Key.Key_Control , Qt.Key.Key_0));
+        resetZoomAction.setShortcut(QKeySequence.fromString("Ctrl+0"));
         resetZoomAction.triggered.connect(this::zoomReset);
 
         optionsMenu.addSeparator();
 
         QAction historyAction = optionsMenu.addAction("History");
-        historyAction.setShortcut(new QKeySequence(Qt.Key.Key_Control , Qt.Key.Key_H));
+        historyAction.setShortcut(QKeySequence.fromString("Ctrl+H"));
         historyAction.triggered.connect(this::showHistory);
 
         QAction mediaSourcesAction = optionsMenu.addAction("Media Sources");
@@ -157,6 +159,12 @@ public class LMainWindow  extends QMainWindow {
 
             modeAction.triggered.connect(this::handleModeChange);
         }
+
+        optionsMenu.addSeparator();
+
+        QAction devToolsAction = optionsMenu.addAction("Dev Tools");
+        devToolsAction.setShortcut(QKeySequence.fromString("Ctrl+Shift+I"));
+        devToolsAction.triggered.connect(this::toggleDevTools);
 
         optionsMenu.addSeparator();
         optionsMenu.addAction("About");
@@ -447,6 +455,39 @@ public class LMainWindow  extends QMainWindow {
         forwardButton.setEnabled(false);
         reloadButton.setEnabled(false);
     }
+
+    private void toggleDevTools() {
+        if (devToolsDialog == null) {
+            createDevToolsWindow();
+        }
+
+        if (devToolsDialog.isVisible()) {
+            devToolsDialog.hide();
+        } else {
+            devToolsDialog.show();
+            loadCurrentTabDevTools();
+        }
+    }
+
+    private void createDevToolsWindow() {
+        devToolsDialog = new QDialog(this);
+        devToolsDialog.setWindowTitle("Developer Tools");
+        devToolsDialog.resize(800, 600);
+
+        devToolsWebView = new QWebEngineView();
+        QVBoxLayout layout = new QVBoxLayout(devToolsDialog);
+        layout.addWidget(devToolsWebView);
+    }
+
+    private void loadCurrentTabDevTools() {
+        QWebEngineView currentView = getCurrentQtView();
+        if (currentView != null) {
+            String debugUrl = "http://localhost:9222/devtools/inspector.html?ws=localhost:9222/devtools/page/"
+                    + currentView.page().devToolsId();
+            devToolsWebView.load(new QUrl(debugUrl));
+        }
+    }
+
 
     @Override
     protected void closeEvent(QCloseEvent event){
