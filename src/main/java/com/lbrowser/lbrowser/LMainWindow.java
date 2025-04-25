@@ -1,16 +1,18 @@
 package com.lbrowser.lbrowser;
 
+import com.lbrowser.lbrowser.dialogs.MediaSelectorDialog;
+import com.lbrowser.lbrowser.media.MediaItem;
 import com.lbrowser.lbrowser.modes.NetworkModeManager;
-import io.qt.core.QList;
-import io.qt.core.QUrl;
-import io.qt.core.QDateTime;
-import io.qt.webengine.core.QWebEngineHistory;
-import io.qt.webengine.core.QWebEngineHistoryItem;
+import io.qt.core.*;
 import io.qt.gui.*;
 import io.qt.webengine.core.QWebEnginePage;
 import io.qt.webengine.core.QWebEngineProfile;
 import io.qt.webengine.widgets.QWebEngineView;
 import io.qt.widgets.*;
+
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 
 public class LMainWindow  extends QMainWindow {
     private QToolBar navigationToolBar;
@@ -463,7 +465,137 @@ public class LMainWindow  extends QMainWindow {
     }
 
     private void showMediaSources(){
-        //Needs implementation
+        QWebEnginePage page = getCurrentQtPage();
+
+        if(page == null){
+            QMessageBox.warning(this, "Media Sources", "No media sources available.");
+            return;
+        }
+
+        //Try to extract media sources with JavaScript
+        String script = """
+            (function() {
+                const baseUrl = document.baseURI;
+                const images = new Set();
+                const videos = new Set();
+                
+                const resolveUrl = (relativeUrl) => {
+                    try {                        
+                        if (relativeUrl.startsWith('data:') || relativeUrl.startsWith('javascript:')) {
+                             return null;
+                        }
+                        return new URL(relativeUrl, baseUrl).toString();
+                    } catch (e) {                        
+                        return null; 
+                    }
+                };
+                
+                document.querySelectorAll('img[src]').forEach(img => {
+                    const absUrl = resolveUrl(img.getAttribute('src'));
+                    if (absUrl && absUrl.startsWith('http')) {
+                        images.add(absUrl);
+                    }
+                    // Support for srcset (experimental)
+                });
+                
+                document.querySelectorAll('video').forEach(vid => {
+                    const vidSrc = vid.getAttribute('src');
+                    if (vidSrc) {
+                        const absUrl = resolveUrl(vidSrc);
+                        if (absUrl && absUrl.startsWith('http')) {
+                            videos.add(absUrl);
+                        }
+                    }
+                    vid.querySelectorAll('source[src]').forEach(source => {
+                        const sourceSrc = source.getAttribute('src');
+                        const absUrl = resolveUrl(sourceSrc);
+                         if (absUrl && absUrl.startsWith('http')) {
+                            videos.add(absUrl);
+                        }
+                    });
+                });
+                
+                document.querySelectorAll('source[src]').forEach(source => {                     
+                     if (!source.closest('video')) {
+                         const sourceSrc = source.getAttribute('src');
+                         const absUrl = resolveUrl(sourceSrc);
+                         if (absUrl && absUrl.startsWith('http')) {                             
+                             videos.add(absUrl);
+                         }
+                     }
+                });
+
+                return JSON.stringify({
+                    images: Array.from(images),
+                    videos: Array.from(videos)
+                });
+            })();
+        """;
+
+        page.runJavaScript(script, result -> {
+            if (result == null || !(result instanceof String)){
+                QMessageBox.warning(this, "Media Sources", "Could not extract media sources.");
+                return;
+            }
+
+            String jsonResult = (String) result;
+            List<MediaItem> mediaItems = parseMediaJson(jsonResult);
+
+            if(mediaItems.isEmpty()){
+                QMessageBox.information(this, "Media Sources", "No downloadable media sources found.");
+            } else {
+                MediaSelectorDialog dialog = new MediaSelectorDialog(mediaItems, this);
+                dialog.exec();
+            }
+        });
+    }
+
+    private List<MediaItem> parseMediaJson(String jsonString) {
+        List<MediaItem> items = new ArrayList<>();
+        try{
+            QJsonDocument.FromJsonResult doc = QJsonDocument.fromJson(jsonString.getBytes(StandardCharsets.UTF_8));
+
+            if(doc == null || !doc.document.isObject()){
+                return items;
+            }
+            QJsonObject obj = doc.document.object();
+
+            if (obj.contains("images")) {
+                QJsonValue imagesValue = obj.value("images");
+                if (imagesValue.isArray()) {
+                    QJsonArray imagesArray = imagesValue.toArray();
+                    for (int i = 0; i < imagesArray.size(); i++) {
+                        QJsonValue imageValue = imagesArray.at(i);
+                        if (imageValue.isString()) {
+                            String url = imageValue.toString();
+                            if (url != null && !url.isEmpty()) {
+                                items.add(new MediaItem(url, "image"));
+                            }
+                        }
+                    }
+                }
+            }
+
+
+            if (obj.contains("videos")) {
+                QJsonValue videosValue = obj.value("videos");
+                if (videosValue.isArray()) {
+                    QJsonArray videosArray = videosValue.toArray();
+                    for (int i = 0; i < videosArray.size(); i++) {
+                        QJsonValue videoValue = videosArray.at(i);
+                        if (videoValue.isString()) {
+                            String url = videoValue.toString();
+                            if (url != null && !url.isEmpty()) {
+                                items.add(new MediaItem(url, "video"));
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        return items;
     }
 
     private void updateUiForView(QWebEngineView view){

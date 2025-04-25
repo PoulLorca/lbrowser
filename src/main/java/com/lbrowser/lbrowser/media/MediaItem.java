@@ -1,15 +1,11 @@
 package com.lbrowser.lbrowser.media;
 
-import javafx.application.Platform;
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.SimpleBooleanProperty;
-import javafx.scene.image.Image;
+import java.nio.charset.StandardCharsets;
 
 public class MediaItem {
     private final String url;
     private final String type;
-    private final BooleanProperty selected = new SimpleBooleanProperty(true);
-    private Image preview;
+    private boolean selected = true;
 
     public MediaItem(String url, String type) {
         this.url = url;
@@ -25,38 +21,35 @@ public class MediaItem {
     }
 
     public boolean isSelected() {
-        return selected.get();
-    }
-
-    public BooleanProperty selectedProperty() {
         return selected;
     }
 
+
     public void setSelected(boolean selected) {
-        this.selected.set(selected);
+        this.selected = selected;
     }
-
-    public Image getPreview() {
-        if(preview == null && "image".equals(type)) {
-            loadPreviewAsync();
-        }
-        return preview;
-    }
-
-    public void setPreview(Image preview) {
-        this.preview = preview;
-    }
-
 
     public String getFilename() {
-        String url = getUrl();
-        return url.substring(url.lastIndexOf("/") + 1);
-    }
+        String path = getUrl();
+        int lastSlash = path.lastIndexOf('/');
+        if (lastSlash >= 0 && lastSlash < path.length() - 1) {
+            path = path.substring(lastSlash + 1);
+        }
+        int queryIndex = path.indexOf('?');
+        if (queryIndex >= 0) {
+            path = path.substring(0, queryIndex);
+        }
 
-    private void loadPreviewAsync() {
-        new Thread(() -> {
-            Image img = new Image(url, 100, 0, true, true, true);
-            Platform.runLater(() -> preview = img);
-        }).start();
+        try{
+            path = java.net.URLDecoder.decode(path, StandardCharsets.UTF_8.name());
+        }catch(Exception e){}
+
+        path = path.replaceAll("[^a-zA-Z0-9.\\-_]", "_");
+
+        if(path.length() > 100){
+            path = path.substring(0, 100);
+        }
+
+        return path.isEmpty() ? "unknown_media" : path;
     }
 }
