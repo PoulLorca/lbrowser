@@ -30,7 +30,7 @@ services:
       - "127.0.0.1:4444:4444"
       - "127.0.0.1:7654:7654"
       - "127.0.0.1:7657:7657"
-      - "12345:12345/tcp"
+    #  - "12345:12345/tcp"
       - "12345:12345/udp"
     volumes:
       - i2p_config:/i2p/.i2p
@@ -43,7 +43,7 @@ services:
     networks:
       - lbrowser_net
     ports:
-      - "127.0.0.1:8000:8000"
+      - "127.0.0.1:8123:8123"
     volumes:
       - hyphanet_data:/data
     restart: unless-stopped

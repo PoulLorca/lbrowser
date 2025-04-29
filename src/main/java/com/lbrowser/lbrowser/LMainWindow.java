@@ -2,6 +2,7 @@ package com.lbrowser.lbrowser;
 
 import com.lbrowser.lbrowser.dialogs.MediaSelectorDialog;
 import com.lbrowser.lbrowser.media.MediaItem;
+import com.lbrowser.lbrowser.modes.DockerManager;
 import com.lbrowser.lbrowser.modes.NetworkModeManager;
 import io.qt.core.*;
 import io.qt.gui.*;
@@ -31,13 +32,17 @@ public class LMainWindow  extends QMainWindow {
     private AdBlocker adBlocker;
     private QActionGroup networkModeActionGroup;
 
+
+    private DockerManager dockerManager;
     private static final String USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/605.1 (KHTML, like Gecko) Lbrowser/1.0 QtJambi";
+    private static final String DOCKER_COMPOSE_FILE = "docker-compose.yml";
 
     public LMainWindow() {
         super();
 
         networkModeManager = new NetworkModeManager();
         adBlocker = new AdBlocker();
+        dockerManager = new DockerManager(DOCKER_COMPOSE_FILE);
 
         setWindowTitle("LBrowser");
         resize(1024, 768);
@@ -144,12 +149,14 @@ public class LMainWindow  extends QMainWindow {
         noAdModeAction.setChecked(adBlocker.isEnabled());
         noAdModeAction.toggled.connect(this::toggleAdBlockMode);
 
+        optionsMenu.addSeparator();
+
+        QAction netConfigAction = optionsMenu.addAction("Net Config");
+        netConfigAction.triggered.connect(this::showNetConfig);
 
         QMenu modesMenu = optionsMenu.addMenu("Net Modes");
         networkModeActionGroup = new QActionGroup(this);
         networkModeActionGroup.setExclusive(true);
-
-
 
         for(NetworkModeManager.NetworkMode mode : NetworkModeManager.NetworkMode.values()) {
             QAction modeAction = modesMenu.addAction(mode.getDisplayName());
@@ -390,6 +397,42 @@ public class LMainWindow  extends QMainWindow {
     private void zoomReset(){
         QWebEngineView view = getCurrentQtView();
         if(view != null) view.setZoomFactor(1.0);
+    }
+
+    private void showNetConfig() {
+        if (dockerManager == null){
+            QMessageBox.critical(this, "Error", "DockerManager is not initialized.");
+            return;
+        }
+
+        QMessageBox.information(this, "Network Configuration", "Checking if Docker is running...");
+        if (!dockerManager.isDockerRunning()) {
+            QMessageBox.critical(this, "Network Configuration", "Docker is not running. Please start Docker Desktop or the Docker daemon and try again.");
+            return;
+        }
+
+        QMessageBox.information(this, "Network Configuration", "Checking Portainer status...");
+        if (!dockerManager.isPortainerRunning()) {
+            QMessageBox.critical(this, "Network Configuration", "Portainer container not found or not running. Attempting to download and start Portainer CE (Community Edition)...");
+
+            if(!dockerManager.startPortainerContainer()){
+                QMessageBox.critical(this, "Network Configuration", "Failed to start Portainer container. Please check your Docker setup.");
+                return;
+            }
+            QMessageBox.information(this, "Network Configuration", "Portainer container started successfully...");
+        }else{
+            QMessageBox.information(this, "Network Configuration", "Portainer is already running.");
+        }
+
+        QMessageBox.information(this, "Network Configuration", "Loading Net images...");
+        if(!dockerManager.startApplicationServices()){
+            QMessageBox.critical(this, "Network Configuration", "Failed to start application services. Please check your Docker setup.");
+        }else{
+            QMessageBox.information(this, "Network Configuration", "Application services started successfully.");
+        }
+
+        QMessageBox.information(this, "Network Configuration", "Opening Portainer...");
+        createNewTab("http://localhost:9000");
     }
 
     private void handleModeChange(){

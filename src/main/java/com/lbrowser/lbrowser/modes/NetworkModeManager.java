@@ -15,7 +15,7 @@ public class NetworkModeManager {
         TOR("Tor Mode", "https://check.torproject.org/"),
         ZERONET("ZeroNet Mode", "http://127.0.0.1:43111/"),
         I2P("I2P Mode", "http://127.0.0.1:7657/"),
-        FREENET("Hyphanet Mode", "http://127.0.0.1:8000/");
+        FREENET("Hyphanet Mode", "http://127.0.0.1:8123/");
 
         private final String displayName;
         private final String startUrl;
