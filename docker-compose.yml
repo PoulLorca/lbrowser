@@ -38,25 +38,20 @@ services:
     restart: unless-stopped
 
   freenet:
-    image: 5nafu/freenet
-    container_name: freenet_node
+    image: poullorca/hyphanet-node:latest
+    container_name: hyphanet_node
     networks:
       - lbrowser_net
     ports:
-      #FProxy exposed only to the local host
-      - "127.0.0.1:8888:8888"
-      #Control port
-      - "127.0.0.1:9481:9481"
-      #- "12345:12345/udp" #Freenet's default port
-      #- "12346:12346/udp" #Freenet's default port
+      - "127.0.0.1:8889:8888"
     volumes:
-      - freenet_data:/data
+      - hyphanet_data:/data
     restart: unless-stopped
 
 volumes:
   tor_data:
   zeronet_data:
-  freenet_data:
+  hyphanet_data:
   i2p_config:
   i2p_torrents:
 
