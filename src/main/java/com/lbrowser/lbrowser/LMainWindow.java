@@ -697,7 +697,7 @@ public class LMainWindow  extends QMainWindow {
                         "    styleElement.id = styleId;" +
                         "    (document.head || document.documentElement).appendChild(styleElement);" +
                         "  }" +
-                        "  /* console.log('Applying AdBlock CSS (' + (css.length > 0 ? css.length + ' bytes' : 'empty') + ')'); */" + // Log JS opcional
+                        "  /* console.log('Applying AdBlock CSS (' + (css.length > 0 ? css.length + ' bytes' : 'empty') + ')'); */" +
                         "  styleElement.textContent = css;" +
                         "})();",
                 escapedCss

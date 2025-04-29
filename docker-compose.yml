@@ -27,23 +27,23 @@ services:
     networks:
       - lbrowser_net
     ports:
-      - "127.0.0.1:4444:4444"   # HTTP Proxy
-      - "127.0.0.1:7654:7654"   # I2CP Protocol
-      - "127.0.0.1:7657:7657"   # Router console
-      - "12345:12345/tcp"       # I2NP Protocol TCP
-      - "12345:12345/udp"       # I2NP Protocol UDP
+      - "127.0.0.1:4444:4444"
+      - "127.0.0.1:7654:7654"
+      - "127.0.0.1:7657:7657"
+      - "12345:12345/tcp"
+      - "12345:12345/udp"
     volumes:
       - i2p_config:/i2p/.i2p
       - i2p_torrents:/i2psnark
     restart: unless-stopped
 
-  freenet:
+  hyphanet:
     image: poullorca/hyphanet-node:latest
     container_name: hyphanet_node
     networks:
       - lbrowser_net
     ports:
-      - "127.0.0.1:8889:8888"
+      - "127.0.0.1:8000:8000"
     volumes:
       - hyphanet_data:/data
     restart: unless-stopped
