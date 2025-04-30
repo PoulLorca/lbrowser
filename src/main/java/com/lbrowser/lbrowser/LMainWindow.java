@@ -76,7 +76,7 @@ public class LMainWindow  extends QMainWindow {
         navigationToolBar.addWidget(reloadButton);
 
         newTabButton = new QToolButton();
-        newTabButton.setIcon(QIcon.fromTheme("new-tab", new QIcon("classpath:icons/plus-circle.svg")));
+        newTabButton.setIcon(QIcon.fromTheme("tab-new-symbolic", new QIcon("classpath:icons/plus-circle.svg")));
         newTabButton.setToolTip("New Tab");
         navigationToolBar.addWidget(newTabButton);
 
@@ -84,7 +84,7 @@ public class LMainWindow  extends QMainWindow {
         navigationToolBar.addWidget(urlLineEdit);
 
         optionsButton = new QToolButton();
-        optionsButton.setIcon(QIcon.fromTheme("application-menu", new QIcon("classpath:icons/menu-dots-circle.svg")));
+        optionsButton.setIcon(QIcon.fromTheme("open-menu-symbolic", new QIcon("classpath:icons/menu-dots-circle.svg")));
         optionsButton.setToolTip("Options");
         optionsButton.setPopupMode(QToolButton.ToolButtonPopupMode.InstantPopup);
         optionsMenu = new QMenu(this);
