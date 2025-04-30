@@ -1,5 +1,6 @@
 package com.lbrowser.lbrowser;
 
+import com.lbrowser.lbrowser.dialogs.DockerSetupTask;
 import com.lbrowser.lbrowser.dialogs.MediaSelectorDialog;
 import com.lbrowser.lbrowser.media.MediaItem;
 import com.lbrowser.lbrowser.modes.DockerManager;
@@ -31,9 +32,11 @@ public class LMainWindow  extends QMainWindow {
     private NetworkModeManager networkModeManager;
     private AdBlocker adBlocker;
     private QActionGroup networkModeActionGroup;
-
-
     private DockerManager dockerManager;
+    private DockerSetupTask dockerTask;
+    private QProgressDialog progressDialog;
+
+
     private static final String USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/605.1 (KHTML, like Gecko) Lbrowser/1.0 QtJambi";
     private static final String DOCKER_COMPOSE_FILE = "docker-compose.yml";
 
@@ -405,34 +408,56 @@ public class LMainWindow  extends QMainWindow {
             return;
         }
 
-        QMessageBox.information(this, "Network Configuration", "Checking if Docker is running...");
-        if (!dockerManager.isDockerRunning()) {
-            QMessageBox.critical(this, "Network Configuration", "Docker is not running. Please start Docker Desktop or the Docker daemon and try again.");
+        if(dockerTask != null && dockerTask.isRunning()){
+            if(progressDialog != null && progressDialog.isVisible()){
+                progressDialog.raise();
+                progressDialog.activateWindow();
+            }else{
+                QMessageBox.information(this, "In progress", "The network configuration is already in progress.");
+            }
             return;
         }
 
-        QMessageBox.information(this, "Network Configuration", "Checking Portainer status...");
-        if (!dockerManager.isPortainerRunning()) {
-            QMessageBox.critical(this, "Network Configuration", "Portainer container not found or not running. Attempting to download and start Portainer CE (Community Edition)...");
+        progressDialog = new QProgressDialog("Setting up Network configuration...", "Cancel", 0, 100, this);
+        progressDialog.setWindowTitle("Network Configuration");
+        progressDialog.setMinimumDuration(0);
+        progressDialog.setValue(0);
+        progressDialog.setModal(true);
 
-            if(!dockerManager.startPortainerContainer()){
-                QMessageBox.critical(this, "Network Configuration", "Failed to start Portainer container. Please check your Docker setup.");
-                return;
-            }
-            QMessageBox.information(this, "Network Configuration", "Portainer container started successfully...");
-        }else{
-            QMessageBox.information(this, "Network Configuration", "Portainer is already running.");
+        dockerTask = new DockerSetupTask(dockerManager);
+
+        dockerTask.progressUpdated.connect(this::updateProgressDialog);
+        dockerTask.taskFinished.connect(this::onDockerTaskFinished);
+
+        dockerTask.start();
+
+        progressDialog.show();
+    }
+
+    private void updateProgressDialog(int value, String message) {
+        if (progressDialog != null) {
+            progressDialog.setValue(value);
+            progressDialog.setLabelText(message);
+        }
+    }
+
+    private void onDockerTaskFinished(boolean success, String finalMessage) {
+        if (progressDialog != null) {
+            progressDialog.setValue(100);
+            progressDialog.setLabelText(finalMessage + (success ? "" : " (failed)"));
+            progressDialog.close();
         }
 
-        QMessageBox.information(this, "Network Configuration", "Loading Net images...");
-        if(!dockerManager.startApplicationServices()){
-            QMessageBox.critical(this, "Network Configuration", "Failed to start application services. Please check your Docker setup.");
-        }else{
-            QMessageBox.information(this, "Network Configuration", "Application services started successfully.");
+
+        if (success) {
+            QMessageBox.information(this, "Success", "Network configuration completed successfully.");
+            createNewTab("http://localhost:9000");
+        } else {
+            QMessageBox.critical(this, "Error", "Network configuration failed: " + finalMessage);
         }
 
-        QMessageBox.information(this, "Network Configuration", "Opening Portainer...");
-        createNewTab("http://localhost:9000");
+        dockerTask = null;
+        progressDialog = null;
     }
 
     private void handleModeChange(){
