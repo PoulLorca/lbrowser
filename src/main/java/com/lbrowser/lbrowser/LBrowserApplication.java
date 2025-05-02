@@ -1,6 +1,7 @@
 package com.lbrowser.lbrowser;
 
 import io.qt.core.Qt;
+import io.qt.gui.QIcon;
 import io.qt.widgets.QApplication;
 import io.qt.widgets.QMainWindow;
 
@@ -17,7 +18,10 @@ public class LBrowserApplication {
         argsList.add("--remote-allow-origins=*");
 
         QApplication.initialize(argsList.toArray(new String[0]));
-        //QApplication.initialize(args);
+        QApplication.setApplicationName("LBrowser");
+        QApplication.setApplicationDisplayName("LBrowser");
+        QApplication.setApplicationVersion("1.0");
+        QApplication.setWindowIcon(QIcon.fromTheme("web-browser"));
 
         QApplication.setAttribute(Qt.ApplicationAttribute.AA_EnableHighDpiScaling);
         QApplication.setAttribute(Qt.ApplicationAttribute.AA_UseHighDpiPixmaps);
