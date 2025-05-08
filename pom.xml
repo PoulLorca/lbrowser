@@ -44,32 +44,12 @@
         </dependency>
         <dependency>
             <groupId>io.qtjambi</groupId>
-            <artifactId>qtjambi-webenginewidgets-native-linux-x64</artifactId>
-            <version>6.8.3</version>
-        </dependency>
-        <dependency>
-            <groupId>io.qtjambi</groupId>
-            <artifactId>qtjambi-webenginecore-native-linux-x64</artifactId>
-            <version>6.8.3</version>
-        </dependency>
-        <dependency>
-            <groupId>io.qtjambi</groupId>
-            <artifactId>qtjambi-network-native-linux-x64</artifactId>
-            <version>6.9.0</version>
-        </dependency>
-        <dependency>
-            <groupId>io.qtjambi</groupId>
             <artifactId>qtjambi-printsupport</artifactId>
             <version>6.9.0</version>
         </dependency>
         <dependency>
             <groupId>io.qtjambi</groupId>
             <artifactId>qtjambi-qml</artifactId>
-            <version>6.9.0</version>
-        </dependency>
-        <dependency>
-            <groupId>io.qtjambi</groupId>
-            <artifactId>qtjambi-qml-native-linux-x64</artifactId>
             <version>6.9.0</version>
         </dependency>
         <dependency>
@@ -84,18 +64,71 @@
         </dependency>
         <dependency>
             <groupId>io.qtjambi</groupId>
+            <artifactId>qtjambi-deployer</artifactId>
+            <version>6.9.0</version>
+        </dependency>
+        <!-- Linux dependencies
+        <dependency>
+            <groupId>io.qtjambi</groupId>
+            <artifactId>qtjambi-deployer-native-linux-x64</artifactId>
+            <version>6.9.0</version>
+        </dependency>
+        <dependency>
+            <groupId>io.qtjambi</groupId>
             <artifactId>qtjambi-native-linux-x64</artifactId>
             <version>6.9.0</version>
         </dependency>
         <dependency>
             <groupId>io.qtjambi</groupId>
-            <artifactId>qtjambi-deployer</artifactId>
+            <artifactId>qtjambi-qml-native-linux-x64</artifactId>
             <version>6.9.0</version>
         </dependency>
         <dependency>
             <groupId>io.qtjambi</groupId>
-            <artifactId>qtjambi-deployer-native-linux-x64</artifactId>
+            <artifactId>qtjambi-webenginecore-native-linux-x64</artifactId>
+            <version>6.8.3</version>
+        </dependency>
+        <dependency>
+            <groupId>io.qtjambi</groupId>
+            <artifactId>qtjambi-network-native-linux-x64</artifactId>
             <version>6.9.0</version>
+        </dependency>
+        <dependency>
+            <groupId>io.qtjambi</groupId>
+            <artifactId>qtjambi-webenginewidgets-native-linux-x64</artifactId>
+            <version>6.8.3</version>
+        </dependency>
+        -->
+        <!-- Windows dependencies -->
+        <dependency>
+            <groupId>io.qtjambi</groupId>
+            <artifactId>qtjambi-deployer-native-windows-x64</artifactId>
+            <version>6.9.0</version>
+        </dependency>
+        <dependency>
+            <groupId>io.qtjambi</groupId>
+            <artifactId>qtjambi-native-windows-x64</artifactId>
+            <version>6.9.0</version>
+        </dependency>
+        <dependency>
+            <groupId>io.qtjambi</groupId>
+            <artifactId>qtjambi-qml-native-windows-x64</artifactId>
+            <version>6.9.0</version>
+        </dependency>
+        <dependency>
+            <groupId>io.qtjambi</groupId>
+            <artifactId>qtjambi-webenginecore-native-windows-x64</artifactId>
+            <version>6.8.3</version>
+        </dependency>
+        <dependency>
+            <groupId>io.qtjambi</groupId>
+            <artifactId>qtjambi-network-native-windows-x64</artifactId>
+            <version>6.9.0</version>
+        </dependency>
+        <dependency>
+            <groupId>io.qtjambi</groupId>
+            <artifactId>qtjambi-webenginewidgets-native-windows-x64</artifactId>
+            <version>6.8.3</version>
         </dependency>
     </dependencies>
 

@@ -613,6 +613,7 @@ public class LMainWindow  extends QMainWindow {
                 QMessageBox.information(this, "Media Sources", "No downloadable media sources found.");
             } else {
                 MediaSelectorDialog dialog = new MediaSelectorDialog(mediaItems, this);
+                dialog.setWindowIcon(QIcon.fromTheme("media-playback-start", new QIcon("classpath:icons/compass.svg")));
                 dialog.exec();
             }
         });

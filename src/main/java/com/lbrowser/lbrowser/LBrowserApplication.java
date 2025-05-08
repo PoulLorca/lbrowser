@@ -5,6 +5,7 @@ import io.qt.gui.QIcon;
 import io.qt.widgets.QApplication;
 import io.qt.widgets.QMainWindow;
 
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -21,7 +22,7 @@ public class LBrowserApplication {
         QApplication.setApplicationName("LBrowser");
         QApplication.setApplicationDisplayName("LBrowser");
         QApplication.setApplicationVersion("1.0");
-        QApplication.setWindowIcon(QIcon.fromTheme("web-browser"));
+        QApplication.setWindowIcon(QIcon.fromTheme("web-browser", new QIcon("classpath:icons/submarine.svg")));
 
         QApplication.setAttribute(Qt.ApplicationAttribute.AA_EnableHighDpiScaling);
         QApplication.setAttribute(Qt.ApplicationAttribute.AA_UseHighDpiPixmaps);
