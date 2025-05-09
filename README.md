@@ -52,6 +52,7 @@ This project would have been significantly harder to develop without the generou
 * [BellSoft (Liberica JDK)](https://bell-sw.com/)
 * [Qt Group (Qt Framework)](https://www.qt.io/)
 * [JetBrains (IntelliJ IDEA Community Edition)](https://www.jetbrains.com/idea/download/)
+* [Portainer.io (Portainer)](https://www.portainer.io/)
 
 ## Contact
 
