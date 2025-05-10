@@ -39,6 +39,7 @@ public class LMainWindow  extends QMainWindow {
 
     private static final String USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/605.1 (KHTML, like Gecko) Lbrowser/1.0 QtJambi";
     private static final String DOCKER_COMPOSE_FILE = "docker-compose.yml";
+    private static final String PROJECT_WEBSITE = "https://poullorca.github.io/lbrowser-site/";
 
     public LMainWindow() {
         super();
@@ -181,7 +182,13 @@ public class LMainWindow  extends QMainWindow {
         devToolsAction.triggered.connect(this::toggleDevTools);
 
         optionsMenu.addSeparator();
-        optionsMenu.addAction("About");
+
+        QAction aboutAction = optionsMenu.addAction("About");
+        aboutAction.triggered.connect(this::showAboutDialog);
+    }
+
+    private void showAboutDialog() {
+        createNewTab(PROJECT_WEBSITE);
     }
 
     private void setupConnections(){

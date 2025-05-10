@@ -2,7 +2,7 @@
 
 **LBrowser: Go Further!**
 
-![LBrowser Logo - Submarine](path/to/your/submarine_logo.png) LBrowser (Little Browser) is a compact, open-source web browser built for privacy and exploration. Navigate the standard web securely and easily access alternative networks like Tor, I2P, Zeronet, and Hyphanet through integrated Docker container modes.
+![LBrowser Logo - Submarine](https://poullorca.github.io/lbrowser-site/submarine.svg) LBrowser (Little Browser) is a compact, open-source web browser built for privacy and exploration. Navigate the standard web securely and easily access alternative networks like Tor, I2P, Zeronet, and Hyphanet through integrated Docker container modes.
 
 ## Why LBrowser?
 
@@ -26,11 +26,13 @@ The easiest way to get LBrowser is to download a pre-compiled release for your o
 * [**Linux 64-bit**](YOUR_LINUX_RELEASE_LINK)
 * [**Windows 64-bit (Windows 10/11)**](YOUR_WINDOWS_RELEASE_LINK)
 
-Find all releases on the [GitHub Releases page](https://github.com/YOUR_GITHUB_USERNAME/LBrowser/releases). ## Building from Source & Documentation
+Find all releases on the [GitHub Releases page](https://github.com/YOUR_GITHUB_USERNAME/LBrowser/releases). 
+
+## Building from Source & Documentation
 
 LBrowser is an open-source project, and you are welcome to build it from source. Detailed instructions on how to set up your development environment and build the project, along with further documentation, can be found on the official website:
 
-🌐 **Visit the Official LBrowser Website for Documentation:** [YOUR_WEBSITE_DOCUMENTATION_LINK]
+🌐  [Visit the Official LBrowser Website for Documentation](https://poullorca.github.io/lbrowser-site/docs/)
 
 ## Contributing
 
@@ -42,7 +44,7 @@ There are several ways you can contribute:
 * 🐛 **Report Bugs:** Encountered a bug? Please [submit an issue](https://github.com/YOUR_GITHUB_USERNAME/LBrowser/issues). Before submitting, please check existing issues to avoid duplicates. Provide as much detail as possible (OS, LBrowser version, steps to reproduce).
 * 💡 **Suggest Features:** Have an idea for a new feature or improvement? Open an issue to discuss it.
 * 💻 **Submit Code (Pull Requests):** If you're a developer, feel free to fork the repository and submit pull requests with fixes or new features. Please check the contribution guidelines (if any, link from your website docs) first.
-* 🔝 **Sponsor Development:** LBrowser is free and doesn't sell data. You can support the project financially and even influence feature prioritization through community "commissions" via Ko-fi. [Sponsor LBrowser on Ko-fi](YOUR_KOFI_LINK)
+* 🔝 **Sponsor Development:** LBrowser is free and doesn't sell data. You can support the project financially and even influence feature prioritization through community "commissions" via Ko-fi. [Sponsor LBrowser on Ko-fi](https://ko-fi.com/lbrowser)
 
 ## Acknowledgements
 
