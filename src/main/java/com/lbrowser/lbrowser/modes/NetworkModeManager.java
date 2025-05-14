@@ -2,7 +2,6 @@ package com.lbrowser.lbrowser.modes;
 
 import io.qt.network.QNetworkProxy;
 import io.qt.webengine.core.QWebEngineProfile;
-import io.qt.webengine.core.QWebEngineSettings;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;

@@ -9,27 +9,47 @@ import io.qt.widgets.*;
 
 import java.util.*;
 
+/**
+ * Custom delegate for rendering media items in a view with thumbnails and selection checkboxes.
+ * Handles asynchronous downloading and caching of image previews, and custom drawing of list items.
+ */
 public class MediaItemDelegate extends QStyledItemDelegate {
+    // Layout dimensions
     private final int padding = 5;
     private final int checkboxWidth = 20;
     private final int previewWidth = 100;
     private final int previewHeight = 75;
 
+    // Cache for downloaded image previews to avoid redundant requests
     private final Map<String, QPixmap> previewCache = new HashMap<>();
-    private final Set<String> downloadsInProgressSet = Collections.synchronizedSet(new HashSet<>());
     private QNetworkAccessManager imageDownloader;
     private QPixmap placeholderPixmap;
 
+    /**
+     * Creates a new media item delegate with image preview capabilities.
+     *
+     * @param parent The parent object for this delegate
+     */
     public MediaItemDelegate(QObject parent){
         super(parent);
 
+        // Initialize placeholder for images not yet downloaded
         placeholderPixmap = new QPixmap(previewWidth, previewHeight);
         placeholderPixmap.fill(new QColor(Qt.GlobalColor.lightGray));
 
+        // Set up the network manager for downloading image previews
         imageDownloader = new QNetworkAccessManager(this);
         imageDownloader.finished.connect(this::onPreviewDownloaded);
     }
 
+    /**
+     * Paints a media item in the view with a checkbox, preview image, and text.
+     * Downloads image previews asynchronously if not already cached.
+     *
+     * @param painter The painter to use for drawing
+     * @param option The style options for this item
+     * @param index The model index for this item
+     */
     @Override
     public void paint(QPainter painter, QStyleOptionViewItem option, QModelIndex index) {
         Object data = index.data(Qt.ItemDataRole.UserRole);
@@ -92,6 +112,13 @@ public class MediaItemDelegate extends QStyledItemDelegate {
         painter.restore();
     }
 
+    /**
+     * Returns the recommended size for media items in the view.
+     *
+     * @param option The style options for this item
+     * @param index The model index for this item
+     * @return The recommended size based on preview dimensions and padding
+     */
     @Override
     public QSize sizeHint(QStyleOptionViewItem option, QModelIndex index) {
         int height = previewHeight + 2 * padding;
@@ -99,6 +126,15 @@ public class MediaItemDelegate extends QStyledItemDelegate {
         return new QSize(width, height);
     }
 
+    /**
+     * Handles user interactions with the delegate, particularly checkbox clicks.
+     *
+     * @param event The event that occurred
+     * @param model The item model
+     * @param option The style options for this item
+     * @param index The model index for this item
+     * @return true if the event was handled, false otherwise
+     */
     @Override
     public boolean editorEvent(QEvent event, QAbstractItemModel model, QStyleOptionViewItem option, QModelIndex index) {
         if(event.type() == QEvent.Type.MouseButtonRelease){
@@ -120,6 +156,12 @@ public class MediaItemDelegate extends QStyledItemDelegate {
         return super.editorEvent(event, model, option, index);
     }
 
+    /**
+     * Initiates asynchronous download of an image preview from a URL.
+     * Avoids redundant downloads for the same URL.
+     *
+     * @param urlString URL of the image to download
+     */
     private void startPreviewDownload(String urlString){
         if(previewCache.containsKey(urlString)  || isDownloadInProgress(urlString)){
             return;
@@ -133,6 +175,12 @@ public class MediaItemDelegate extends QStyledItemDelegate {
         reply.setProperty("previewUrl", urlString);
     }
 
+    /**
+     * Checks if a download for the specified URL is already in progress.
+     *
+     * @param urlString The URL to check
+     * @return true if the URL is already being downloaded
+     */
     private boolean isDownloadInProgress(String urlString){
         for(QNetworkReply reply : imageDownloader.findChildren(QNetworkReply.class)){
             if(urlString.equals(reply.property("previewUrl"))){
@@ -142,6 +190,12 @@ public class MediaItemDelegate extends QStyledItemDelegate {
         return false;
     }
 
+    /**
+     * Callback for when an image preview download completes.
+     * Updates the cache and refreshes the view if necessary.
+     *
+     * @param reply The network reply containing the downloaded image data
+     */
     private void onPreviewDownloaded(QNetworkReply reply){
         String urlString = reply.property("previewUrl") != null ? reply.property("previewUrl").toString() : null;
 
