@@ -15,6 +15,11 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/**
+ * Dialog that allows users to select and download media elements (images, videos, etc.)
+ * found on a web page. Provides options to select all items, preview them,
+ * and download selected or all items.
+ */
 public class MediaSelectorDialog extends QDialog {
 
     private static final Logger LOGGER = Logger.getLogger(MediaSelectorDialog.class.getName());
@@ -36,6 +41,12 @@ public class MediaSelectorDialog extends QDialog {
     private int failedDownloads = 0;
     private List<String> failedUrls;
 
+    /**
+     * Creates a new dialog for selecting media elements.
+     *
+     * @param items List of media items to display
+     * @param parent Parent widget for this dialog
+     */
     public MediaSelectorDialog(List<MediaItem> items, QWidget parent){
         super(parent);
         this.allMediaItems = new ArrayList<>(items);
@@ -50,6 +61,9 @@ public class MediaSelectorDialog extends QDialog {
         updateSelectAllState();
     }
 
+    /**
+     * Sets up the user interface components of the dialog.
+     */
     private void setupUI(){
         QVBoxLayout mainLayout = new QVBoxLayout(this);
 
@@ -88,6 +102,10 @@ public class MediaSelectorDialog extends QDialog {
         mainLayout.addLayout(bottomLayout);
     }
 
+    /**
+     * Populates the media list with the provided items.
+     * Creates a list item for each media item and sets its initial selection state.
+     */
     private void populateList(){
         mediaListWidget.clear();
         for (MediaItem item : allMediaItems){
@@ -101,6 +119,10 @@ public class MediaSelectorDialog extends QDialog {
         }
     }
 
+    /**
+     * Sets up signal and slot connections between UI widgets
+     * and their corresponding event handlers.
+     */
     private void setupConnections(){
         cancelButton.clicked.connect(this::reject);
         downloadSelectedButton.clicked.connect(this::downloadSelected);
@@ -111,6 +133,12 @@ public class MediaSelectorDialog extends QDialog {
         mediaListWidget.itemChanged.connect(this::onItemChanged);
     }
 
+    /**
+     * Handles changes to the "Select All" checkbox.
+     * Updates the selection state of all media items in the list.
+     *
+     * @param state The new state of the checkbox
+     */
     private void onSelectAllChanged(int state){
         if(selectAllCheckBox.isTristate() && state == Qt.CheckState.PartiallyChecked.value()){
             selectAllCheckBox.setCheckState(Qt.CheckState.Checked);
@@ -139,6 +167,12 @@ public class MediaSelectorDialog extends QDialog {
         }
     }
 
+    /**
+     * Handles changes to a list item.
+     * Updates the selection state of the corresponding MediaItem object.
+     *
+     * @param listItem The list item that changed
+     */
     private void onItemChanged(QListWidgetItem listItem){
         MediaItem mediaItem = getMediaItemFromListItem(listItem);
         if (mediaItem != null){
@@ -148,6 +182,10 @@ public class MediaSelectorDialog extends QDialog {
         updateSelectAllState();
     }
 
+    /**
+     * Updates the counter that displays how many items are selected
+     * out of the total available.
+     */
     private void updateCounter(){
         long selectedCount = 0;
         for (int i = 0; i < mediaListWidget.count(); i++) {
@@ -159,6 +197,10 @@ public class MediaSelectorDialog extends QDialog {
         counterLabel.setText(String.format("%d/%d selected", selectedCount, totalCount));
     }
 
+    /**
+     * Updates the "Select All" checkbox state based on the current selection.
+     * May set a partial state if only some items are selected.
+     */
     private void updateSelectAllState(){
         long selectedCount = 0;
         long totalCount = mediaListWidget.count();
@@ -191,6 +233,10 @@ public class MediaSelectorDialog extends QDialog {
         selectAllCheckBox.stateChanged.connect(this::onSelectAllChanged);
     }
 
+    /**
+     * Initiates download of the selected media items.
+     * Shows a dialog to select the destination directory.
+     */
     private void downloadSelected(){
         List<MediaItem> itemsToDownload = new ArrayList<>();
         for (int i = 0; i < mediaListWidget.count(); i++) {
@@ -209,6 +255,10 @@ public class MediaSelectorDialog extends QDialog {
         }
     }
 
+    /**
+     * Initiates download of all media items, regardless of their selection state.
+     * Shows a dialog to select the destination directory.
+     */
     private void downloadAll(){
         if(!allMediaItems.isEmpty()){
             startDownloadProcess(allMediaItems);
@@ -217,6 +267,12 @@ public class MediaSelectorDialog extends QDialog {
         }
     }
 
+    /**
+     * Begins the download process for a list of media items.
+     * Sets up the progress bar and prepares the network manager.
+     *
+     * @param items List of media items to download
+     */
     private void startDownloadProcess(List<MediaItem> items){
         if (downloadsInProgress > 0){
             QMessageBox.warning(this, "Download", "Downloads are already in progress.");
@@ -256,6 +312,13 @@ public class MediaSelectorDialog extends QDialog {
         }
     }
 
+    /**
+     * Downloads an individual media file.
+     * Handles duplicate filenames by adding a counter.
+     *
+     * @param item Media item to download
+     * @param targetDir Directory where files will be saved
+     */
     private void downloadFile(MediaItem item, String targetDir){
         QUrl url = new QUrl(item.getUrl());
         if(!url.isValid()){
@@ -300,6 +363,12 @@ public class MediaSelectorDialog extends QDialog {
         reply.setProperty("originalUrl", item.getUrl());
     }
 
+    /**
+     * Handles the completion of a network request.
+     * Saves the downloaded file and updates counters and progress bar.
+     *
+     * @param reply Network response containing the downloaded data
+     */
     private void onNetworkReplyFinished(QNetworkReply reply){
         downloadsInProgress--;
 
@@ -346,6 +415,10 @@ public class MediaSelectorDialog extends QDialog {
     }
 
 
+    /**
+     * Checks if all downloads have finished and shows a summary.
+     * If there are errors, displays details of the files that failed.
+     */
     private void checkDownloadsComplete(){
         if(downloadsInProgress <= 0){
             downloadsInProgress = 0;
@@ -377,16 +450,28 @@ public class MediaSelectorDialog extends QDialog {
         }
     }
 
+    /**
+     * Disables download buttons during the download process.
+     */
     private void disableDownloadButtons(){
         downloadSelectedButton.setEnabled(false);
         downloadAllButton.setEnabled(false);
     }
 
+    /**
+     * Enables download buttons after all downloads are completed.
+     */
     private void enableDownloadButtons(){
         downloadSelectedButton.setEnabled(true);
         downloadAllButton.setEnabled(true);
     }
 
+    /**
+     * Gets the MediaItem object associated with a list item.
+     *
+     * @param listItem List item from which to extract the MediaItem
+     * @return The associated MediaItem object, or null if none exists
+     */
     private MediaItem getMediaItemFromListItem(QListWidgetItem listItem){
         if(listItem != null){
             Object data = listItem.data(Qt.ItemDataRole.UserRole);
