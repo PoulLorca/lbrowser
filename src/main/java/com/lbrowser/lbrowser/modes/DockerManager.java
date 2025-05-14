@@ -9,11 +9,20 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * Manages Docker operations for the application, including container management,
+ * Docker Compose operations and Portainer administration.
+ * Provides methods to verify Docker status, run containers, and execute Docker commands.
+ */
 public class DockerManager {
     private final String dockerComposeFilePath;
-    private static final List<String> DOCKER_COMMANDS = Arrays.asList("docker", "compose");
-    private static final List<String> FALLBACK_DOCKER_COMMANDS = Arrays.asList("docker-compose");
-    
+
+    /**
+     * Creates a new Docker manager with the specified Docker Compose file.
+     *
+     * @param dockerComposeFilePath Path to the Docker Compose file
+     * @throws IllegalArgumentException if the path is null or empty
+     */
     public DockerManager(String dockerComposeFilePath) {
         if(dockerComposeFilePath == null || dockerComposeFilePath.trim().isEmpty()) {
             throw new IllegalArgumentException("Docker compose file path cannot be null or empty");
@@ -25,7 +34,14 @@ public class DockerManager {
         }
         this.dockerComposeFilePath = dockerComposeFilePath;
     }
-    
+
+    /**
+     * Executes a system command and returns the exit code and output.
+     *
+     * @param command Command to execute as a list of strings
+     * @param workingDirectory Directory to run the command in, or null for the current directory
+     * @return Array containing exit code [0] and command output [1]
+     */
     private String[] executeCommand(List<String> command, File workingDirectory){
         StringBuilder output = new StringBuilder();
         int exitCode = -1;
@@ -63,7 +79,12 @@ public class DockerManager {
         
         return new String[]{String.valueOf(exitCode), output.toString()};
     }
-    
+
+    /**
+     * Checks if the Docker daemon is running and available.
+     *
+     * @return true if Docker is operational, false otherwise
+     */
     public boolean isDockerRunning(){
         List<String> command = List.of("docker", "info");
         String[] result = executeCommand(command, null);
@@ -86,6 +107,11 @@ public class DockerManager {
         }
     }
 
+    /**
+     * Verifies if the Portainer container is running by inspecting its status.
+     *
+     * @return true if Portainer is running, false otherwise
+     */
     public boolean isPortainerRunning(){
         List<String> command = List.of("docker", "container", "inspect", "portainer");
         String[] result = executeCommand(command, null);
@@ -103,6 +129,12 @@ public class DockerManager {
         return false;
     }
 
+    /**
+     * Starts a Portainer container with standard configuration.
+     * Maps ports 8000 and 9000, mounts the Docker socket and creates a persistent volume.
+     *
+     * @return true if the container started successfully, false otherwise
+     */
     public boolean startPortainerContainer(){
         List<String> command = new ArrayList<>(Arrays.asList(
                 "docker", "run", "-d",
@@ -115,7 +147,7 @@ public class DockerManager {
                 "portainer/portainer-ce:latest"
         ));
 
-        System.out.println("Attemping to run Portainer container...");
+        System.out.println("Attempting to run Portainer container...");
         String[] result = executeCommand(command, null);
         int exitCode = Integer.parseInt(result[0]);
         String output = result[1];
@@ -133,6 +165,12 @@ public class DockerManager {
         }
     }
 
+    /**
+     * Creates and starts application services defined in the Docker Compose file.
+     * Tries both "docker compose" and "docker-compose" commands for compatibility.
+     *
+     * @return true if services started successfully, false otherwise
+     */
     public boolean startApplicationServices(){
         File composeFile = new File(dockerComposeFilePath);
         if(!composeFile.exists()) {

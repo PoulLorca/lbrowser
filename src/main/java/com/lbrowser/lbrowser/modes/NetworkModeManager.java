@@ -113,7 +113,7 @@ public class NetworkModeManager {
 
     /**
      * Configures the network proxy settings based on the current mode.
-     * Sets appropriate proxy type, host, and port according to the selected mode.
+     * Sets the appropriate proxy type, host and port according to the selected mode.
      * Also configures security settings like cache type and cookie policy.
      *
      * @param profile The web engine profile to configure
