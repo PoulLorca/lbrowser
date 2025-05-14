@@ -89,7 +89,7 @@ public class DockerSetupTask extends QThread {
     }
 
     /**
-     * Emits a task finished signal with success status and result message.
+     * Emits a task-finished signal with success status and result message.
      *
      * @param success Whether the setup completed successfully
      * @param message The result or error message

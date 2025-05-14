@@ -445,7 +445,7 @@ public class LMainWindow  extends QMainWindow {
     }
 
     /**
-     * Navigates back in the current web view.
+     * Navigates back to the current web view.
      */
     private void goBack(){
         QWebEngineView view = getCurrentQtView();
@@ -496,7 +496,7 @@ public class LMainWindow  extends QMainWindow {
 
     /**
      * Shows the network configuration dialog.
-     * Initiates Docker setup process with progress feedback.
+     * Initiates a Docker setup process with progress feedback.
      */
     private void showNetConfig() {
         if (dockerManager == null){
@@ -610,7 +610,7 @@ public class LMainWindow  extends QMainWindow {
 
     /**
      * Shows the browsing history in a new tab.
-     * Currently displays a privacy notice since history is not persisted.
+     * Currently, displays a privacy notice since history is not persisted.
      */
     private void showHistory() {
         QWebEngineView originalView = getCurrentQtView();
@@ -886,7 +886,7 @@ public class LMainWindow  extends QMainWindow {
 
 
     /**
-     * Handles window close events by closing all tabs properly.
+     * Handles the window close events by closing all tabs properly.
      *
      * @param event The close event
      */
