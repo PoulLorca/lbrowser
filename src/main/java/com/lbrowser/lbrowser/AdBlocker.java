@@ -11,11 +11,17 @@ import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
+/**
+ * AdBlocker implementation that uses EasyList filter rules to block ads in the browser.
+ * Downloads and processes CSS hiding rules to create stylesheets that hide ad elements.
+ */
 public class AdBlocker {
+    // URLs for EasyList filter rules
     private static final String URL_ALLOWLIST_GENERAL_HIDE = "https://raw.githubusercontent.com/easylist/easylist/refs/heads/master/easylist/easylist_allowlist_general_hide.txt";
     private static final String URL_GENERAL_HIDE = "https://raw.githubusercontent.com/easylist/easylist/refs/heads/master/easylist/easylist_general_hide.txt";
     private static final String URL_SPECIFIC_HIDE = "https://raw.githubusercontent.com/easylist/easylist/refs/heads/master/easylist/easylist_specific_hide.txt";
 
+    // Collections to store different types of filter rules
     private final Set<String> generalHidingSelectors = Collections.synchronizedSet(new HashSet<>());
     private final Map<String, Set<String>> domainSpecificHidingSelectors = Collections.synchronizedMap(new HashMap<>());
     private final Set<String> generalExceptionSelectors = Collections.synchronizedSet(new HashSet<>());
@@ -24,10 +30,19 @@ public class AdBlocker {
     private volatile boolean enabled = false;
     private volatile boolean rulesLoaded = false;
 
+    /**
+     * Creates a new AdBlocker instance and starts loading filter rules asynchronously.
+     */
     public AdBlocker(){
         loadRulesAsync();
     }
 
+    /**
+     * Enables or disables the ad blocker.
+     * If enabled and rules haven't been loaded yet, starts loading them.
+     *
+     * @param enabled True to enable the ad blocker, false to disable it
+     */
     public void setEnabled(boolean enabled){
         this.enabled = enabled;
         if(enabled && !rulesLoaded){
@@ -35,14 +50,29 @@ public class AdBlocker {
         }
     }
 
+    /**
+     * Checks if the ad blocker is currently enabled.
+     *
+     * @return True if the ad blocker is enabled
+     */
     public boolean isEnabled(){
         return enabled;
     }
 
+    /**
+     * Checks if filter rules have been successfully loaded.
+     *
+     * @return True if rules are loaded and ready for use
+     */
     public boolean areRulesLoaded(){
         return rulesLoaded;
     }
 
+    /**
+     * Asynchronously downloads and parses ad blocking rules from EasyList sources.
+     *
+     * @return A CompletableFuture that completes when rules have been loaded
+     */
     public CompletableFuture<Void> loadRulesAsync(){
         if(rulesLoaded && !generalHidingSelectors.isEmpty()){
             return CompletableFuture.completedFuture(null);
@@ -70,6 +100,13 @@ public class AdBlocker {
                 });
     }
 
+    /**
+     * Downloads and parses a filter list from the specified URL.
+     *
+     * @param listUrl URL of the filter list to download
+     * @param isAllowList True if this is an allowlist (exception rules), false otherwise
+     * @return A CompletableFuture that completes when download and parsing are done
+     */
     private CompletableFuture<Void> downloadAndParseList(String listUrl, boolean isAllowList){
         return CompletableFuture.runAsync(() ->  {
             HttpURLConnection connection = null;
@@ -98,6 +135,12 @@ public class AdBlocker {
         });
     }
 
+    /**
+     * Parses a single line from a filter list and adds it to the appropriate collection.
+     *
+     * @param line Line from filter list
+     * @param isAllowList True if this is from an allowlist (exception rules)
+     */
     private void parseLine(String line, boolean isAllowList){
         line = line.trim();
 
@@ -141,6 +184,13 @@ public class AdBlocker {
         }
     }
 
+    /**
+     * Generates CSS rules to hide ad elements for a specific URL.
+     * Combines general rules and domain-specific rules, excluding exceptions.
+     *
+     * @param urlString URL of the page to generate rules for
+     * @return CSS content to inject into the page
+     */
     public String getEffectiveCssForDomain(String urlString){
         if (!enabled || !rulesLoaded || urlString == null || urlString.isEmpty() || urlString.startsWith("data:") || urlString.startsWith("about:")) {
             return "";
@@ -183,6 +233,9 @@ public class AdBlocker {
                 + "\n{ display: none !important; visibility: hidden !important; }";
     }
 
+    /**
+     * Adds domain-specific selectors to a target set.
+     */
     private void addSelectorsForDomain(Map<String, Set<String>> domainMap, String domain, Set<String> targetSet) {
         Set<String> selectors = domainMap.get(domain);
         if(selectors != null){
@@ -190,6 +243,9 @@ public class AdBlocker {
         }
     }
 
+    /**
+     * Removes domain-specific exception selectors from a target set.
+     */
     private void removeSelectorsForDomain(Map<String, Set<String>> domainMap, String domain, Set<String> targetSet){
         Set<String> selectors = domainMap.get(domain);
         if(selectors != null){
@@ -197,6 +253,13 @@ public class AdBlocker {
         }
     }
 
+    /**
+     * Extracts the base domain from a host name.
+     * For example, from "www.example.com" returns "example.com"
+     *
+     * @param host Full hostname
+     * @return Base domain
+     */
     private String getBaseDomain(String host){
         if(host == null) return null;
         String[] parts = host.split("\\.");
@@ -211,18 +274,5 @@ public class AdBlocker {
             return parts[secondLast] + "." + parts[last];
         }
         return host;
-    }
-
-    public String createDataUrlForCss(String cssContent){
-        if(cssContent == null || cssContent.isEmpty()){
-            return null;
-        }
-        try{
-            String encodeCss = URLEncoder.encode(cssContent, StandardCharsets.UTF_8).replace("+", "%20");
-            return "data:text/css;charset=utf-8," + encodeCss;
-        }catch (Exception e){
-            System.err.println("AdBlocker: Error creating data URL for CSS: " + e.getMessage());
-            return null;
-        }
     }
 }
