@@ -16,6 +16,11 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Main application window for the LBrowser web browser.
+ * Provides tab-based browsing with navigation controls, ad blocking capabilities,
+ * network mode management, and media source extraction.
+ */
 public class LMainWindow  extends QMainWindow {
     private QToolBar navigationToolBar;
     private QLineEdit urlLineEdit;
@@ -41,6 +46,9 @@ public class LMainWindow  extends QMainWindow {
     private static final String DOCKER_COMPOSE_FILE = "docker-compose.yml";
     private static final String PROJECT_WEBSITE = "https://poullorca.github.io/lbrowser-site/";
 
+    /**
+     * Creates a new main window with browser functionality and initializes components.
+     */
     public LMainWindow() {
         super();
 
@@ -57,6 +65,10 @@ public class LMainWindow  extends QMainWindow {
         createNewTab(networkModeManager.getCurrentModeStartUrl());
     }
 
+    /**
+     * Sets up the user interface components for the browser window.
+     * Initializes toolbars, buttons, address bar, and tab container.
+     */
     private void setupUI() {
         navigationToolBar = new QToolBar("Navigation");
         addToolBar(navigationToolBar);
@@ -124,6 +136,10 @@ public class LMainWindow  extends QMainWindow {
         updateNavigationButtons();
     }
 
+    /**
+     * Sets up the options menu with zoom controls, history, media extraction,
+     * ad blocking, network configuration, and developer tools.
+     */
     private void setupOptionsMenu(){
         optionsMenu.clear();
 
@@ -187,10 +203,16 @@ public class LMainWindow  extends QMainWindow {
         aboutAction.triggered.connect(this::showAboutDialog);
     }
 
+    /**
+     * Shows the about dialog displaying the project website.
+     */
     private void showAboutDialog() {
         createNewTab(PROJECT_WEBSITE);
     }
 
+    /**
+     * Sets up signal and slot connections for UI elements.
+     */
     private void setupConnections(){
         backButton.clicked.connect(this::goBack);
         forwardButton.clicked.connect(this::goForward);
@@ -202,6 +224,11 @@ public class LMainWindow  extends QMainWindow {
         tabWidget.tabCloseRequested.connect(this::closeTab);
     }
 
+    /**
+     * Gets the web view widget from the currently active tab.
+     *
+     * @return The current QWebEngineView, or null if none exists
+     */
     private QWebEngineView getCurrentQtView(){
         QWidget currentWidget = tabWidget.currentWidget();
         if(currentWidget instanceof QWebEngineView){
@@ -210,11 +237,22 @@ public class LMainWindow  extends QMainWindow {
         return null;
     }
 
+    /**
+     * Gets the web page from the currently active tab.
+     *
+     * @return The current QWebEnginePage, or null if none exists
+     */
     private QWebEnginePage getCurrentQtPage(){
         QWebEngineView view = getCurrentQtView();
         return (view != null) ? view.page() : null;
     }
 
+    /**
+     * Creates a new browser tab with the specified URL.
+     * Configures the web view with appropriate settings and loads the URL.
+     *
+     * @param urlToLoad The URL to load in the new tab
+     */
     private void createNewTab(String urlToLoad){
         QWebEngineView qtWebView = new QWebEngineView();
         QWebEnginePage qtPage = qtWebView.page();
@@ -233,6 +271,12 @@ public class LMainWindow  extends QMainWindow {
         urlLineEdit.setFocus();
     }
 
+    /**
+     * Sets up signal connections for a web view to handle URL changes,
+     * page loading events, and new window requests.
+     *
+     * @param webView The web view to configure
+     */
     private void setupWebViewSignals(QWebEngineView webView){
         webView.urlChanged.connect(qUrl -> {
             if(webView == getCurrentQtView()){
@@ -307,6 +351,12 @@ public class LMainWindow  extends QMainWindow {
         });
     }
 
+    /**
+     * Closes the tab at the specified index.
+     * Properly disconnects signals and disposes of resources.
+     *
+     * @param index The index of the tab to close
+     */
     private void closeTab(int index){
         if (index < 0 || index >= tabWidget.count()) {
             return;
@@ -332,6 +382,11 @@ public class LMainWindow  extends QMainWindow {
         }
     }
 
+    /**
+     * Handles tab change events by updating the UI to reflect the current tab.
+     *
+     * @param index The index of the newly selected tab
+     */
     private void onTabChanged(int index){
         if(index >= 0 && index < tabWidget.count()){
             QWebEngineView currentView = getCurrentQtView();
@@ -352,10 +407,16 @@ public class LMainWindow  extends QMainWindow {
         }
     }
 
+    /**
+     * Creates a new tab when the new tab button is clicked.
+     */
     private void handleNewTabButton(){
         createNewTab(networkModeManager.getCurrentModeStartUrl());
     }
 
+    /**
+     * Loads the URL from the address bar in the current tab.
+     */
     private void loadUrlInCurrentTab(){
         QWebEngineView view = getCurrentQtView();
         if(view != null){
@@ -366,6 +427,12 @@ public class LMainWindow  extends QMainWindow {
         }
     }
 
+    /**
+     * Formats a URL string by adding appropriate protocol prefixes if needed.
+     *
+     * @param url The URL to format
+     * @return The properly formatted URL
+     */
     private String formatUrl(String url){
         if(url == null) return "";
         url = url.trim();
@@ -377,16 +444,25 @@ public class LMainWindow  extends QMainWindow {
         return url;
     }
 
+    /**
+     * Navigates back in the current web view.
+     */
     private void goBack(){
         QWebEngineView view = getCurrentQtView();
         if(view != null) view.back();
     }
 
+    /**
+     * Navigates forward in the current web view.
+     */
     private void goForward(){
         QWebEngineView view = getCurrentQtView();
         if(view != null) view.forward();
     }
 
+    /**
+     * Reloads the current page.
+     */
     private void reloadPage(){
         QWebEngineView view = getCurrentQtView();
         if(view != null) {
@@ -394,21 +470,34 @@ public class LMainWindow  extends QMainWindow {
         }
     }
 
+    /**
+     * Increases the zoom level of the current web view.
+     */
     private void zoomIn(){
         QWebEngineView view = getCurrentQtView();
         if(view != null) view.setZoomFactor(view.getZoomFactor() + 0.1);
     }
 
+    /**
+     * Decreases the zoom level of the current web view.
+     */
     private void zoomOut(){
         QWebEngineView view = getCurrentQtView();
         if(view != null) view.setZoomFactor(view.getZoomFactor() - 0.1);
     }
 
+    /**
+     * Resets the zoom level of the current web view to 100%.
+     */
     private void zoomReset(){
         QWebEngineView view = getCurrentQtView();
         if(view != null) view.setZoomFactor(1.0);
     }
 
+    /**
+     * Shows the network configuration dialog.
+     * Initiates Docker setup process with progress feedback.
+     */
     private void showNetConfig() {
         if (dockerManager == null){
             QMessageBox.critical(this, "Error", "DockerManager is not initialized.");
@@ -441,6 +530,12 @@ public class LMainWindow  extends QMainWindow {
         progressDialog.show();
     }
 
+    /**
+     * Updates the progress dialog during Docker setup.
+     *
+     * @param value The progress percentage
+     * @param message The progress message to display
+     */
     private void updateProgressDialog(int value, String message) {
         if (progressDialog != null) {
             progressDialog.setValue(value);
@@ -448,6 +543,13 @@ public class LMainWindow  extends QMainWindow {
         }
     }
 
+    /**
+     * Handles completion of the Docker setup task.
+     * Shows appropriate messages and opens Portainer if successful.
+     *
+     * @param success Whether the setup was successful
+     * @param finalMessage The final status message
+     */
     private void onDockerTaskFinished(boolean success, String finalMessage) {
         if (progressDialog != null) {
             progressDialog.setValue(100);
@@ -467,6 +569,10 @@ public class LMainWindow  extends QMainWindow {
         progressDialog = null;
     }
 
+    /**
+     * Handles changes to the network mode.
+     * Updates network settings and opens a new tab with the appropriate start URL.
+     */
     private void handleModeChange(){
         QAction triggeredAction = (QAction) sender();
         if (triggeredAction != null && triggeredAction.isChecked()) {
@@ -479,6 +585,12 @@ public class LMainWindow  extends QMainWindow {
         }
     }
 
+    /**
+     * Toggles the ad blocker on or off.
+     * Applies ad blocking CSS to all open tabs when enabled.
+     *
+     * @param checked Whether ad blocking should be enabled
+     */
     private void toggleAdBlockMode(boolean checked){
         if (adBlocker == null) return;
         adBlocker.setEnabled(checked);
@@ -496,6 +608,10 @@ public class LMainWindow  extends QMainWindow {
         }
     }
 
+    /**
+     * Shows the browsing history in a new tab.
+     * Currently displays a privacy notice since history is not persisted.
+     */
     private void showHistory() {
         QWebEngineView originalView = getCurrentQtView();
         if (originalView == null) return;
@@ -539,6 +655,10 @@ public class LMainWindow  extends QMainWindow {
         }
     }
 
+    /**
+     * Shows the media sources dialog for downloading images and videos.
+     * Extracts media sources from the current page using JavaScript.
+     */
     private void showMediaSources(){
         QWebEnginePage page = getCurrentQtPage();
 
@@ -626,6 +746,12 @@ public class LMainWindow  extends QMainWindow {
         });
     }
 
+    /**
+     * Parses JSON data containing media sources extracted from a web page.
+     *
+     * @param jsonString The JSON string containing media URLs
+     * @return A list of MediaItem objects representing extractable media
+     */
     private List<MediaItem> parseMediaJson(String jsonString) {
         List<MediaItem> items = new ArrayList<>();
         try{
@@ -674,6 +800,11 @@ public class LMainWindow  extends QMainWindow {
         return items;
     }
 
+    /**
+     * Updates the UI elements to reflect the current state of the web view.
+     *
+     * @param view The web view to get state from
+     */
     private void updateUiForView(QWebEngineView view){
         if(view == null){
             clearUiState();
@@ -684,6 +815,10 @@ public class LMainWindow  extends QMainWindow {
 
     }
 
+    /**
+     * Updates the navigation buttons based on the current page state.
+     * Enables or disables back, forward, and reload buttons as appropriate.
+     */
     private void updateNavigationButtons(){
         QWebEngineView view = getCurrentQtView();
         if(view != null){
@@ -698,6 +833,9 @@ public class LMainWindow  extends QMainWindow {
         }
     }
 
+    /**
+     * Clears the UI state when no tab is active.
+     */
     private void clearUiState(){
         urlLineEdit.clear();
         backButton.setEnabled(false);
@@ -705,6 +843,9 @@ public class LMainWindow  extends QMainWindow {
         reloadButton.setEnabled(false);
     }
 
+    /**
+     * Toggles the visibility of the developer tools window.
+     */
     private void toggleDevTools() {
         if (devToolsDialog == null) {
             createDevToolsWindow();
@@ -718,6 +859,9 @@ public class LMainWindow  extends QMainWindow {
         }
     }
 
+    /**
+     * Creates the developer tools window.
+     */
     private void createDevToolsWindow() {
         devToolsDialog = new QDialog(this);
         devToolsDialog.setWindowTitle("Developer Tools");
@@ -728,6 +872,9 @@ public class LMainWindow  extends QMainWindow {
         layout.addWidget(devToolsWebView);
     }
 
+    /**
+     * Loads developer tools for the current tab.
+     */
     private void loadCurrentTabDevTools() {
         QWebEngineView currentView = getCurrentQtView();
         if (currentView != null) {
@@ -738,6 +885,11 @@ public class LMainWindow  extends QMainWindow {
     }
 
 
+    /**
+     * Handles window close events by closing all tabs properly.
+     *
+     * @param event The close event
+     */
     @Override
     protected void closeEvent(QCloseEvent event){
         while(tabWidget.count() > 0){
@@ -747,6 +899,12 @@ public class LMainWindow  extends QMainWindow {
         super.closeEvent(event);
     }
 
+    /**
+     * Applies ad blocking CSS to a web page if ad blocking is enabled.
+     * Injects CSS via JavaScript to hide ad elements.
+     *
+     * @param page The web page to apply ad blocking to
+     */
     private void applyAdBlockerCssToQtPage(QWebEnginePage page){
         if(page == null || adBlocker == null) return;
 
