@@ -23,10 +23,10 @@ The easiest way to get LBrowser is to download a pre-compiled release for your o
 
 **Download Latest Releases:**
 
-* [**Linux 64-bit**](YOUR_LINUX_RELEASE_LINK)
-* [**Windows 64-bit (Windows 10/11)**](YOUR_WINDOWS_RELEASE_LINK)
+* [**Linux 64-bit**](https://github.com/PoulLorca/lbrowser/releases)
+* [**Windows 64-bit (Windows 10/11)**](https://github.com/PoulLorca/lbrowser/releases)
 
-Find all releases on the [GitHub Releases page](https://github.com/YOUR_GITHUB_USERNAME/LBrowser/releases). 
+Find all releases on the [GitHub Releases page](https://github.com/PoulLorca/lbrowser/releases). 
 
 ## Building from Source & Documentation
 
@@ -41,7 +41,7 @@ LBrowser is primarily developed and maintained by a single person (myself!) in m
 There are several ways you can contribute:
 
 * ⭐ **Star the Repository:** Show your support and help increase the project's visibility.
-* 🐛 **Report Bugs:** Encountered a bug? Please [submit an issue](https://github.com/YOUR_GITHUB_USERNAME/LBrowser/issues). Before submitting, please check existing issues to avoid duplicates. Provide as much detail as possible (OS, LBrowser version, steps to reproduce).
+* 🐛 **Report Bugs:** Encountered a bug? Please [submit an issue](https://github.com/PoulLorca/lbrowser/issues). Before submitting, please check existing issues to avoid duplicates. Provide as much detail as possible (OS, LBrowser version, steps to reproduce).
 * 💡 **Suggest Features:** Have an idea for a new feature or improvement? Open an issue to discuss it.
 * 💻 **Submit Code (Pull Requests):** If you're a developer, feel free to fork the repository and submit pull requests with fixes or new features. Please check the contribution guidelines (if any, link from your website docs) first.
 * 🔝 **Sponsor Development:** LBrowser is free and doesn't sell data. You can support the project financially and even influence feature prioritization through community "commissions" via Ko-fi. [Sponsor LBrowser on Ko-fi](https://ko-fi.com/lbrowser)
