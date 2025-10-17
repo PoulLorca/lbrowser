@@ -1,3 +1,17 @@
+# 🛑 ATTENTION! IMPORTANT MESSAGE 🛑
+
+**THANK YOU FOR YOUR INTEREST IN THIS PROJECT. I STRONGLY ENCOURAGE YOU TO FIRST REVIEW THE BIFROST INITIATIVE AND BIFROSTOS.**
+
+I have centralized my efforts to simplify access to multiple resilient networks. **BifrostOS** is now the recommended all-in-one solution, providing **Hyphanet** plus three other networks (Tor, I2P, ZeroNet) in a single, pre-configured image using one command.
+
+**I invite you to try BifrostOS, the comprehensive solution:** 
+* **➡️ Github:** [https://github.com/PoulLorca/BifrostOS](https://github.com/PoulLorca/BifrostOS) 
+* **➡️ Docker Hub:** [https://hub.docker.com/repository/docker/poullorca/bifrostos](https://hub.docker.com/repository/docker/poullorca/bifrostos) 
+---
+
+
+
+
 # LBrowser
 
 **LBrowser: Go Further!**
